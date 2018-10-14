@@ -55,11 +55,12 @@ class Region():
         # If none of the evaluations fail, point is in region
         for idx, surface in enumerate(cls.surfaces):
             sgn = cls.orientations[idx]
-            # print('region: ', cls.name)
+            # print('region: ', cls.uid)
+            # print('surface: ', surface.id)
             # print('surface: ', surface.name)
             # print('r from center: ', [r[0]-1.26/2,r[1]-1.26/2])
             # print('orientation: ', sgn)
-            # print('evaluation: ', surface.evaluate(r))
+            # print('evaluation: ', surface.evaluate(r), 'r: ',r)
             if sgn*surface.evaluate(r) < 0:
                 return False
         # print("in region", cls.name)

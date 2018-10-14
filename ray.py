@@ -45,7 +45,6 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
                         r = r1
                         boundary = surface.boundary_type
                         col_surface = surface
-        # print(ray.r, ray.u, r, region_id, col_surface.id)
         segment_d = np.linalg.norm(r - r1)
         ray.length += segment_d
         regions[region_id].tot_track_length += segment_d

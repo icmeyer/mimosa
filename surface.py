@@ -117,7 +117,7 @@ class YPlane(Surface):
         float
             y - y_0
         """
-        return point[0] - self.y0
+        return point[1] - self.y0
 
 class Circle(Surface):
     """ A circle defined by (x-x0)^2 + (y-y0)^2 = R^2

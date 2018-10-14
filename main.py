@@ -41,7 +41,7 @@ def main(n_rays, surfaces, regions, length, plot=False, physics=False):
         rstart = np.array([rand(),rand()])*length
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
-        ray_init = Ray(r=rstart, theta=theta, varphi=polar, ngroup = 2)
+        ray_init = Ray(r=rstart, theta=theta, varphi=polar, ngroup = 10)
         ray = make_segments(ray_init, surfaces, regions, deadzone=50)
         all_track_length += ray.length
         rays.append(ray)
@@ -101,7 +101,4 @@ def main(n_rays, surfaces, regions, length, plot=False, physics=False):
     if plot:
         print('Plotting tracks')
         plot_from_rays(rays, regions, MATERIALS, length = 3*1.26)
-        plt.plot(np.arange(counter+1), ks)
-        plt.xlabel('Iteration')
-        plt.ylabel('k')
-        plt.show()
+        plot_k(np.arange(counter+1),ks)

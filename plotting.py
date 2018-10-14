@@ -27,20 +27,27 @@ def plotlines(lines='', circles = '', length = 1.26):
 def plot_from_rays(rays, regions, MATERIALS, length=1.26):
     fuelcolors = ['tab:orange', 'tab:green', 'tab:red', 'tab:purple',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
+    modcolors = ['xkcd:aqua','xkcd:azure','xkcd:blue','xkcd:darkblue',
+                 'xkcd:lightblue','xkcd:navy']
     linesegs = []
     linecols = []
     for ray in rays:
         for segment in ray.segments:
             linesegs.append([segment.r0,segment.r1])
             mat = regions[segment.region].mat
-            mod_counter = 0
             if mat == 'mod':
-                mod_counter += 1
-                linecols.append([0, 0, 1.0-mod_counter/9, 1])
+                linecols.append(modcolors[segment.region%6])
             elif mat == 'fuel':
                 linecols.append(fuelcolors[segment.region%9-1])
     lines = [linesegs, linecols]
     plotlines(lines=lines,length=length)
+
+def plot_k(iterations, ks):
+    plt.scatter(iterations, ks)
+    plt.xlabel('Iteration')
+    plt.ylabel('k')
+    plt.show()
+
 
 
 

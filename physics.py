@@ -1,14 +1,32 @@
 import numpy as np
 from math import pi
 
-MATERIALS = {'fuel': {'total': [0.37, 0.66], 
-                      'nufission': [0.01, 0.38],
-                      'scatter': np.array([[0.24, 0.0],[0.072, 1.35]]), 
-                      'xi': [1.0, 0] },
-             'mod':  {'total': [0.68, 2.2], 
-                      'nufission': [0.0, 0.0],
-                      'scatter': np.array([[0.30, 0.0],[0.001, 0.42]]), 
-                      'xi': [0.0, 0.0]} }
+# MATERIALS = {'fuel': {'total': [0.37, 0.66], 
+#                       'nufission': [0.01, 0.38],
+#                       'scatter': np.array([[0.24, 0.0],[0.072, 1.35]]), 
+#                       'xi': [1.0, 0] },
+#              'mod':  {'total': [0.68, 2.2], 
+#                       'nufission': [0.0, 0.0],
+#                       'scatter': np.array([[0.30, 0.0],[0.001, 0.42]]), 
+#                       'xi': [0.0, 0.0]} }
+def import_xs(folder):
+    """Create a MATERIALS dictionary using files output by OpenMC"""
+    fuel_file = '_cell_1'
+    mod_file = '_cell_0'
+    MATERIALS = {'fuel': {'total': np.loadtxt(folder+'total'+fuel_file),
+                          'nufission': np.loadtxt(folder+'nufission'+fuel_file),
+                          'scatter': np.loadtxt(folder+'scatter'+fuel_file),
+                          'xi': np.loadtxt(folder+'xi'+fuel_file)
+                          },
+                 'mod': {'total': np.loadtxt(folder+'total'+mod_file),
+                         'nufission': np.loadtxt(folder+'nufission'+mod_file),
+                         'scatter': np.loadtxt(folder+'scatter'+mod_file),
+                         'xi': np.loadtxt(folder+'xi'+mod_file)
+                        }
+                }
+    return MATERIALS
+
+MATERIALS = import_xs('./make_xs/xs/')
 
 def calc_q(regions, ngroup, k):
     """Updates the q's of the regions and returns a total q"""
