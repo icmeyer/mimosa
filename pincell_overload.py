@@ -37,7 +37,7 @@ regions.append(Region([circles[0]], [-1], name='fuel0'))
 moderator = Region([left, right, top, bottom, circles[-1]], [1, -1, -1, 1, 1], name = 'mod') 
 regions.append(moderator)
 
-n_rays = 20
+n_rays = 50
 main(n_rays, surfaces, regions, pitch, plot=True)
 
 # linesegs = []

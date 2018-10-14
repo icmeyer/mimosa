@@ -4,7 +4,7 @@ import cmath
 from region import what_region
 from tools import intersection
 
-def make_segments(ray, surfaces, regions, cutoff_length = 300):
+def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
     """Make segments using a ray with an initial location and direction
 
     Parameters
@@ -17,17 +17,21 @@ def make_segments(ray, surfaces, regions, cutoff_length = 300):
         List of regions used in the problem
     cutoff_length : float, opt
         How far to track the ray, default is 200 cm
+    deadzone : float, opt
+        Length of deadzone to use
 
     Returns
     -------
     ray : Ray object
         A ray object with populated segments attribute
     """
+    ###TODO: Only need to ray trace for first iteration
+    ### set up case where segments are used if they already exist
     while ray.length < cutoff_length:
         # Find current region by iterating through surfaces
-        region = what_region(ray.r, regions)
+        region_id = what_region(ray.r, regions)
         r1 = []
-        d_to_beat = cutoff_length
+        d_to_beat = np.Inf
 
         # Find nearest surface to intersect with
         for surface in surfaces:
@@ -41,9 +45,15 @@ def make_segments(ray, surfaces, regions, cutoff_length = 300):
                         r = r1
                         boundary = surface.boundary_type
                         col_surface = surface
-        # print(ray.r, r, region)
-        ray.segments.append(Segment(ray.r, r, region))
-        ray.length += np.linalg.norm(r - r1)
+        # print(ray.r, ray.u, r, region_id, col_surface.id)
+        segment_d = np.linalg.norm(r - r1)
+        ray.length += segment_d
+        regions[region_id].tot_track_length += segment_d
+        if ray.length < deadzone:
+            segment = Segment(ray.r, r, ray.mu, region_id, active=False)
+        elif ray.length > deadzone:
+            segment = Segment(ray.r, r, ray.mu, region_id, active=True)
+        ray.segments.append(segment)
         ray.r = r
         d_to_beat = cutoff_length
 
@@ -92,13 +102,16 @@ class Ray():
     length : float
         length of the total ray
     """
-    def __init__(self, r, theta, varphi):
+    def __init__(self, r, theta, varphi, ngroup):
         self.r = r
         self.u = np.array([np.cos(theta), np.sin(theta)])
         self.varphi = varphi
+        self.mu = np.cos(varphi)
+        self.ngroup = ngroup
         self.region = None
         self.segments = []
         self.length = 0
+
 
 class Segment():
     """One segment of a ray
@@ -121,15 +134,13 @@ class Segment():
         Final position of segment
     region_name : str
         Name of region that the segment is in 
-    #TODO: add psi0 and psi1
     """
-    def __init__(self, r0, r1, region_name):
+    def __init__(self, r0, r1, mu, region_num, active=True):
         self.r0 = r0
         self.r1 = r1
-        self.region = region_name
+        self.mu = mu
+        self.region = region_num
 
+        self.d = np.linalg.norm(r1-r0)/mu
+        self.active = active
 
-    
-
-
-        

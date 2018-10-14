@@ -24,23 +24,23 @@ def plotlines(lines='', circles = '', length = 1.26):
     ax.set_aspect(1.0)
     plt.show()
 
-def plot_from_rays(rays):
+def plot_from_rays(rays, regions, MATERIALS, length=1.26):
     fuelcolors = ['tab:orange', 'tab:green', 'tab:red', 'tab:purple',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
     linesegs = []
     linecols = []
-    fuelre = re.compile('fuel.*')
-    modre = re.compile('mod.*')
     for ray in rays:
         for segment in ray.segments:
             linesegs.append([segment.r0,segment.r1])
-            matnum = get_trailing_numbers(segment.region, zero=True)
-            if re.match(modre, segment.region):
-                linecols.append([0, 0, 1.0-matnum/9, 1])
-            elif re.match(fuelre, segment.region):
-                linecols.append(fuelcolors[matnum%9-1])
+            mat = regions[segment.region].mat
+            mod_counter = 0
+            if mat == 'mod':
+                mod_counter += 1
+                linecols.append([0, 0, 1.0-mod_counter/9, 1])
+            elif mat == 'fuel':
+                linecols.append(fuelcolors[segment.region%9-1])
     lines = [linesegs, linecols]
-    plotlines(lines=lines)
+    plotlines(lines=lines,length=length)
 
 
 

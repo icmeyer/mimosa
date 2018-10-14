@@ -1,3 +1,5 @@
+import numpy as np
+
 class Region():
     """The Region class describes the region using CSG
 
@@ -18,16 +20,23 @@ class Region():
         The surfaces that define the region
     orientations : list of -1,1
         On which side of each surface the region is located
-    name : str, opt
-        name of the region
-    mat : int, opt
-        id of material contained within surface
+    uid : int
+        Unique id of the region
+    mat : str, opt
+        name of material contained within surface
     """
-    def __init__(self, surfaces, orientations, name = '', mat = []):
+    def __init__(self, surfaces, orientations, uid, mat = [], phi=0, vol=0):
         self.surfaces = surfaces
         self.orientations = orientations
-        self.name = name
+        self.uid = uid
         self.mat = mat
+        self.phi = phi
+        self.vol = vol
+
+        self.q = np.zeros([len(phi),])
+        self.tracks_phi = np.zeros([len(phi),])
+        self.q_phi = np.zeros([len(phi),])
+        self.tot_track_length = 0
 
     def evaluate(cls, r):
         """Check if r is located within the region
@@ -72,6 +81,6 @@ def what_region(r, regions):
     """
     for region in regions:
         if region.evaluate(r):
-            return region.name
+            return region.uid
         
     

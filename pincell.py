@@ -17,24 +17,11 @@ bottom = YPlane(surface_id=5, boundary_type='reflection', y0=0)
 
 surfaces = [circle, left, right, top, bottom]
 
-moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1], 
-                    name='mod')
-fuel = Region([circle], [-1], name='fuel')
+moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
+                    uid=0, mat='mod', phi = [0.1, 0.1])
+fuel = Region([circle], [-1], uid=1, mat='fuel', phi = [1, 0.1])
 regions = [moderator, fuel]
 
-n_rays = 10
-main(n_rays, surfaces, regions, pitch, plot=True)
+n_rays = 20
+main(n_rays, surfaces, regions, pitch, plot=True, physics=True)
 
-# linesegs = []
-# linecols = []
-# if False:
-#     for segment in rays[0].segments:
-#         linesegs.append([segment.r0,segment.r1])
-#         if segment.region == 'mod':
-#             linecols.append('b')
-#         elif segment.region == 'fuel':
-#             linecols.append('g')
-#         elif segment.region == None:
-#             linecols.append('r')
-#     lines = [linesegs, linecols]
-#     plotlines(lines=lines, circles= '')

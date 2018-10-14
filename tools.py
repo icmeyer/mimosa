@@ -1,6 +1,14 @@
 import numpy as np
 import cmath
 import re
+def checktol(x,y,tol):
+    """Check absolute difference between two values and compare to 
+    a defined tolerance. Return boolean. """
+    err = abs(abs(x-y)/x)
+    if err<tol:
+        return True
+    if err>tol:
+        return False
 
 def normalize(x):
     return x/np.linalg.norm(x)
