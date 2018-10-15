@@ -42,10 +42,12 @@ def plot_from_rays(rays, regions, MATERIALS, length=1.26):
     lines = [linesegs, linecols]
     plotlines(lines=lines,length=length)
 
-def plot_k(iterations, ks):
+def plot_k(iterations, ks, title):
     plt.scatter(iterations, ks)
     plt.xlabel('Iteration')
     plt.ylabel('k')
+    plt.title(title)
+    plt.savefig('ks.png')
     plt.show()
 
 

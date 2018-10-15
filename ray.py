@@ -25,8 +25,7 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
     ray : Ray object
         A ray object with populated segments attribute
     """
-    ###TODO: Only need to ray trace for first iteration
-    ### set up case where segments are used if they already exist
+
     while ray.length < cutoff_length:
         # Find current region by iterating through surfaces
         region_id = what_region(ray.r, regions)
@@ -40,18 +39,25 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
                 r1 = loc_dist_pair[0]
                 d = loc_dist_pair[1]
                 if d > 0 and (np.imag(r1) == 0).all():
+                    # If new intersection is closer, make this collision 
+                    # surface
                     if d < d_to_beat:
                         d_to_beat = d
                         r = r1
                         boundary = surface.boundary_type
                         col_surface = surface
-        segment_d = np.linalg.norm(r - r1)
+
+        segment_d = np.linalg.norm(r - ray.r)
         ray.length += segment_d
-        regions[region_id].tot_track_length += segment_d
+
+        #Only add to active length if past deadzone
         if ray.length < deadzone:
             segment = Segment(ray.r, r, ray.mu, region_id, active=False)
         elif ray.length > deadzone:
+            regions[region_id].tot_track_length += segment_d
+            ray.active_length += segment_d
             segment = Segment(ray.r, r, ray.mu, region_id, active=True)
+
         ray.segments.append(segment)
         ray.r = r
         d_to_beat = cutoff_length
@@ -66,8 +72,9 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
         else:
             raise TypeError('Unkown boundary condition for surface ' + 
                             col_surface.name + 'with ' + boundary)
-        # Move ray forward a small bit to ensure location in new region
-        smudge = 1e-8
+
+        # Move ray forward a small bit to insure location in new region
+        smudge = 1e-11
         ray.r += ray.u*smudge
 
     return ray
@@ -94,22 +101,26 @@ class Ray():
         unit vector
     varphi : float
         Polar angle
+    mu : float
+        cos(Polar angle)
     region : in
         id of the current region
     segments : list of Segment
         all of the segments of the given ray
     length : float
         length of the total ray
+    active_length : float
+        active physics length of the total ray
     """
-    def __init__(self, r, theta, varphi, ngroup):
+    def __init__(self, r, theta, varphi):
         self.r = r
         self.u = np.array([np.cos(theta), np.sin(theta)])
         self.varphi = varphi
         self.mu = np.cos(varphi)
-        self.ngroup = ngroup
         self.region = None
         self.segments = []
         self.length = 0
+        self.active_length = 0
 
 
 class Segment():
