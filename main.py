@@ -1,3 +1,4 @@
+NGROUP = 2
 header = """
   _  _  __  _  _   __   ____   __   
  ( \/ )(  )( \/ ) /  \ / ___) / _\  
@@ -10,15 +11,17 @@ header = """
 # This file will drive the simulation
 import re
 import numpy as np
+import time
 from numpy.random import random_sample as rand
 from math import pi
 
 from surface import XPlane, YPlane, Circle
-from tools import normalize, intersection, get_trailing_numbers, checktol
+from tools import normalize, intersection, checktol
 from plotting import *
 from region import Region
 from ray import Ray, make_segments
-from physics import calc_q, ray_contributions, MATERIALS, normalize_phi
+from physics import calc_q, ray_contributions, normalize_phi
+from materials import MATERIALS
 np.random.seed(42)
 
 def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
@@ -32,6 +35,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         Amount of deadzone to use in simulation
     
     """
+    start = time.time()
     print(header)
     rays = []
     print('Laying down tracks')
@@ -67,8 +71,8 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
 
         ks = [k]
         converged = False
-        # while counter < 2:
         print('Begin iterations')
+        # while counter < 2:
         while not converged:
             counter += 1
             print('Iterations: ', counter, ' k = ', k)
@@ -98,6 +102,10 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
                 print('Flux in region', region.uid, ' ', region.phi)
         
         print('k = ', k, ' after ', counter, 'iterations')
+        end = time.time()
+        elapsed_time = end - start
+        print('Elapsed time:           ', elapsed_time)
+        print('Time per active length: ', elapsed_time/all_active_length)
 
     if plot:
         ktitle ='k='+str(k)+' n_rays='+str(n_rays)

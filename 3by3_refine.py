@@ -87,6 +87,6 @@ mod9 = Region([xplane2, right, yplane2, bottom, surfaces[fuel_refine_level*8]],[
 region_counter += 1
 regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 
-n_rays = 1000
+n_rays = 10
 main(n_rays, surfaces, regions, length, ngroup, plot=True, physics=True)
 

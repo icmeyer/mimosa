@@ -17,7 +17,7 @@ bottom = YPlane(surface_id=5, boundary_type='reflection', y0=0)
 
 surfaces = [circle, left, right, top, bottom]
 
-ngroup = 10
+ngroup = 2
 phiguess = np.ones([ngroup,])
 moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
                     uid=0, mat='mod', phi=phiguess)
