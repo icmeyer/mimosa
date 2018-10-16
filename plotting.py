@@ -50,6 +50,22 @@ def plot_k(iterations, ks, title):
     plt.savefig('ks.png')
     plt.show()
 
+def plot_flux(e_groups, regions):
+    fig, ax = plt.subplots()
+    legend_names = []
+    for region in regions:
+        flux = np.insert(region.phi[::-1],0,0)
+        print(e_groups)
+        print(flux)
+        plt.step(e_groups, flux)
+        legend_names.append((region.mat + 'Region '+str(region.uid)))
+    plt.legend(legend_names)
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    plt.show()
+        
+
+
 
 
 

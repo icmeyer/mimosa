@@ -1,4 +1,4 @@
-NGROUP = 2
+NGROUP = 10
 header = """
   _  _  __  _  _   __   ____   __   
  ( \/ )(  )( \/ ) /  \ / ___) / _\  
@@ -47,7 +47,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
-        ray = make_segments(ray_init, surfaces, regions, cutoff_length=300)
+        ray = make_segments(ray_init, surfaces, regions, cutoff_length=300, deadzone = 100)
         all_track_length += ray.length
         all_active_length += ray.active_length
         rays.append(ray)
@@ -66,7 +66,6 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         #Initial k and q guess
         k = 1
         print('Calculating initial q')
-        normalize_phi(regions, ngroup)
         fission_source_old, k = calc_q(regions, ngroup, k)
 
         ks = [k]
@@ -74,6 +73,10 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         print('Begin iterations')
         # while counter < 2:
         while not converged:
+            normalize_phi(regions, ngroup)
+            #Print out flux in each region
+            for region in regions:
+                print(counter, 'Flux in region', region.uid, region.mat, region.phi)
             counter += 1
             print('Iterations: ', counter, ' k = ', k)
             rays = ray_contributions(rays, ngroup, regions)
@@ -83,8 +86,10 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
                 sigma_t = MATERIALS[region.mat]['total']
                 vol = region.vol
                 term = (1/vol/sigma_t)
+                print('transport source', region.mat, term*region.tracks_phi/all_active_length)
+                print('source term', region.mat, region.q/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
-                              + region.q_phi)
+                              + region.q/sigma_t)
 
                 # Zero out phi counters
                 region.tracks_phi = np.zeros(region.phi.shape)
@@ -99,7 +104,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
             
             #Print out flux in each region
             for region in regions:
-                print('Flux in region', region.uid, ' ', region.phi)
+                print(counter, 'Flux in region', region.uid, region.mat, region.phi)
         
         print('k = ', k, ' after ', counter, 'iterations')
         end = time.time()
@@ -112,6 +117,9 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         print('Plotting tracks')
         plot_from_rays(rays, regions, MATERIALS, length = 3*1.26)
         plot_k(np.arange(counter+1),ks, ktitle)
+        if ngroup == 10:
+            energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
+            plot_flux(energy_groups, regions)
 
 # Helpful snippet below for checking for negative values
 

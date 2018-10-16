@@ -33,7 +33,7 @@ def intersection(r, u, surface):
     """
     if surface.type == 'circle':
         radius = surface.r
-        d_to_center = r-[surface.x0, surface.y0]
+        d_to_center = np.array(r)-np.array([surface.x0, surface.y0])
         quad1 = -(np.dot(u, d_to_center))
         test = -np.linalg.norm(d_to_center)**2
         test2 = radius**2

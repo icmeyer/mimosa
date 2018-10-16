@@ -4,14 +4,14 @@ from math import pi
 from materials import MATERIALS
 
 def normalize_phi(regions, ngroup):
-    """Normalize the phi of the problem. Currently unused."""
+    """Normalize the phi of the problem."""
     phi_sum = 0
     for region in regions:
         for group in range(ngroup):
-            phi_sum += region.q[group]
+            phi_sum += region.phi[group]
     for region in regions:
         for group in range(ngroup):
-            region.q[group] = region.q[group]/phi_sum
+            region.phi[group] = region.phi[group]/phi_sum
 
 def normalize_q(regions, ngroup):
     """Normalize the q of the problem. Currently unused."""
@@ -60,10 +60,13 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
         nuf = MATERIALS[region.mat]['nufission']
         fission_source += np.dot(nuf,phi)
         region_fission_source += np.dot(nuf,phi)
+        # print('fission source', region.mat, region_fission_source)
+        
 
         # scatter is organized by [group out, group in]
         # region.q += reduction*np.matmul(scatter,phi.T)
-        region.q += np.matmul(scatter,phi.T)
+        region.q += np.matmul(scatter,phi)
+        # print('scatter source', region.mat, np.matmul(scatter,phi))
         
 
         #Distribute fission source using xi
@@ -100,15 +103,6 @@ def ray_contributions(rays, ngroup, regions):
     -------
     rays : list of Ray objects
     """
-
-    for region in regions:
-        # for group in range(ngroup):
-            # sigma_t = MATERIALS[region.mat]['total'][group]
-            # region.q_phi[group] += (4*pi/sigma_t)*region.q[group]
-        # region.q_phi += region.q
-        sigma_t = MATERIALS[region.mat]['total']
-        region.q_phi += (1/sigma_t)*region.q
-
     for ray in rays:
         # Calculate initial psi
         region = regions[ray.segments[0].region]

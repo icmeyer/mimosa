@@ -17,13 +17,14 @@ bottom = YPlane(surface_id=5, boundary_type='reflection', y0=0)
 
 surfaces = [circle, left, right, top, bottom]
 
-ngroup = 2
-phiguess = np.ones([ngroup,])
+ngroup = 10
+fuelphiguess = np.ones([ngroup,])
+modphiguess = fuelphiguess*0.1
 moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
-                    uid=0, mat='mod', phi=phiguess)
-fuel = Region([circle], [-1], uid=1, mat='fuel', phi=phiguess)
+                    uid=0, mat='mod', phi=modphiguess)
+fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 100
+n_rays = 1000
 main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
 
