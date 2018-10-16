@@ -62,12 +62,14 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
         region_fission_source += np.dot(nuf,phi)
 
         # scatter is organized by [group out, group in]
-        region.q += reduction*np.matmul(scatter,phi.T)
+        # region.q += reduction*np.matmul(scatter,phi.T)
+        region.q += np.matmul(scatter,phi.T)
         
 
         #Distribute fission source using xi
         chi = MATERIALS[region.mat]['chi']
-        region.q += reduction*chi*region_fission_source/k
+        # region.q += reduction*chi*region_fission_source/k
+        region.q += chi*region_fission_source/k
         #     ####MIRIAM BIT
         #     if idx == 0:
         #         region.q[group] = 0
@@ -103,13 +105,15 @@ def ray_contributions(rays, ngroup, regions):
         # for group in range(ngroup):
             # sigma_t = MATERIALS[region.mat]['total'][group]
             # region.q_phi[group] += (4*pi/sigma_t)*region.q[group]
-        region.q_phi += region.q
+        # region.q_phi += region.q
+        sigma_t = MATERIALS[region.mat]['total']
+        region.q_phi += (1/sigma_t)*region.q
 
     for ray in rays:
         # Calculate initial psi
         region = regions[ray.segments[0].region]
         sigma_t = MATERIALS[region.mat]['total']
-        psi = regions[ray.segments[0].region].q
+        psi = regions[ray.segments[0].region].q/(4*pi*sigma_t)
 
         for segment in ray.segments:
             d = segment.d
@@ -120,10 +124,10 @@ def ray_contributions(rays, ngroup, regions):
             q = region.q
             # Calculate delta_psi
             tau = sigma_t*d
-            delta_psi = (psi - q)*(1-np.exp(-tau))
+            delta_psi = (psi - q*(1/4/pi/sigma_t))*(1-np.exp(-tau))
 
             if segment.active:
-                region.tracks_phi += 4*delta_psi
+                region.tracks_phi += 4*pi*delta_psi
                 
             psi -= delta_psi
             
