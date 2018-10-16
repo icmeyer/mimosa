@@ -84,7 +84,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
                 vol = region.vol
                 term = (1/vol/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
-                              + region.q_phi)
+                              + 4*pi*region.q_phi)
 
                 # Zero out phi counters
                 region.tracks_phi = np.zeros(region.phi.shape)

@@ -24,6 +24,6 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=phiguess)
 regions = [moderator, fuel]
 
-n_rays = 1000
+n_rays = 100
 main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
 

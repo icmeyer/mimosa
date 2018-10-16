@@ -48,14 +48,14 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
                         col_surface = surface
 
         segment_d = np.linalg.norm(r - ray.r)
-        ray.length += segment_d
+        ray.length += segment_d/ray.mu
 
         #Only add to active length if past deadzone
         if ray.length < deadzone:
             segment = Segment(ray.r, r, ray.mu, region_id, active=False)
         elif ray.length > deadzone:
             regions[region_id].tot_track_length += segment_d
-            ray.active_length += segment_d
+            ray.active_length += segment_d/ray.mu
             segment = Segment(ray.r, r, ray.mu, region_id, active=True)
 
         ray.segments.append(segment)

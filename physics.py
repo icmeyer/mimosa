@@ -49,24 +49,25 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
     fission_source = 0
     for idx, region in enumerate(regions):
         scatter = MATERIALS[region.mat]['scatter']
+        sigma_t = MATERIALS[region.mat]['total']
+        reduction = (1/4/pi/sigma_t)
         phi = region.phi
         region_fission_source = 0
         region.q = np.zeros([len(phi),])
 
-        for group in range(ngroup):
-            # Calculate region fission source
-            nuf = MATERIALS[region.mat]['nufission'][group]
-            fission_source += nuf*phi[group]
-            region_fission_source += nuf*phi[group]
+        # Energy 'loop'
+        # Calculate region fission source
+        nuf = MATERIALS[region.mat]['nufission']
+        fission_source += np.dot(nuf,phi)
+        region_fission_source += np.dot(nuf,phi)
 
-            # Caclculate source from scattering
-            for group_prime in range(ngroup):
-                region.q[group] += scatter[group, group_prime]*phi[group_prime]
+        # scatter is organized by [group out, group in]
+        region.q += reduction*np.matmul(scatter,phi.T)
+        
 
         #Distribute fission source using xi
-        for group in range(ngroup):
-            chi = MATERIALS[region.mat]['chi'][group]
-            region.q[group] += chi*region_fission_source/k
+        chi = MATERIALS[region.mat]['chi']
+        region.q += reduction*chi*region_fission_source/k
         #     ####MIRIAM BIT
         #     if idx == 0:
         #         region.q[group] = 0
@@ -99,16 +100,16 @@ def ray_contributions(rays, ngroup, regions):
     """
 
     for region in regions:
-        for group in range(ngroup):
-            sigma_t = MATERIALS[region.mat]['total'][group]
+        # for group in range(ngroup):
+            # sigma_t = MATERIALS[region.mat]['total'][group]
             # region.q_phi[group] += (4*pi/sigma_t)*region.q[group]
-            region.q_phi[group] += (1/sigma_t)*region.q[group]
+        region.q_phi += region.q
 
     for ray in rays:
         # Calculate initial psi
         region = regions[ray.segments[0].region]
         sigma_t = MATERIALS[region.mat]['total']
-        psi = regions[ray.segments[0].region].q/(4*pi*sigma_t)
+        psi = regions[ray.segments[0].region].q
 
         for segment in ray.segments:
             d = segment.d
@@ -119,7 +120,7 @@ def ray_contributions(rays, ngroup, regions):
             q = region.q
             # Calculate delta_psi
             tau = sigma_t*d
-            delta_psi = (psi - (q/4/pi/sigma_t))*(1-np.exp(-tau))
+            delta_psi = (psi - q)*(1-np.exp(-tau))
 
             if segment.active:
                 region.tracks_phi += 4*delta_psi
