@@ -25,7 +25,7 @@ def plotlines(lines='', circles = '', length = 1.26):
     plt.show()
 
 def plot_from_rays(rays, regions, MATERIALS, length=1.26):
-    fuelcolors = ['tab:orange', 'tab:green', 'tab:red', 'tab:purple',
+    fuelcolors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']
     modcolors = ['xkcd:aqua','xkcd:azure','xkcd:blue','xkcd:darkblue',
                  'xkcd:lightblue','xkcd:navy']
@@ -38,7 +38,7 @@ def plot_from_rays(rays, regions, MATERIALS, length=1.26):
             if mat == 'mod':
                 linecols.append(modcolors[segment.region%6])
             elif mat == 'fuel':
-                linecols.append(fuelcolors[segment.region%9-1])
+                linecols.append(fuelcolors[segment.region%10])
     lines = [linesegs, linecols]
     plotlines(lines=lines,length=length)
 
@@ -55,11 +55,11 @@ def plot_flux(e_groups, regions):
     legend_names = []
     for region in regions:
         flux = np.insert(region.phi[::-1],0,0)
-        print(e_groups)
-        print(flux)
         plt.step(e_groups, flux)
-        legend_names.append((region.mat + 'Region '+str(region.uid)))
+        legend_names.append((region.mat + ' Region '+str(region.uid)))
     plt.legend(legend_names)
+    plt.xlabel('Energy (eV)')
+    plt.ylabel('Normalized Flux cm^{-2}')
     ax.set_yscale('log')
     ax.set_xscale('log')
     plt.show()

@@ -16,7 +16,7 @@ circ_counter = 100
 xcoord = pitch/2
 ycoord = xcoord
 
-fuel_refine_level = 6
+fuel_refine_level = 8
 # Biggest radius first
 radii = np.linspace(0,0.39218,fuel_refine_level+1)[:0:-1]
 
@@ -55,6 +55,6 @@ mod1 = Region([left, right, top, bottom, surfaces[fuel_refine_level*0]],[1, -1, 
 region_counter += 1
 regions += [mod1]
 
-n_rays = 100
+n_rays = 10
 main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
 

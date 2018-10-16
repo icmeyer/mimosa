@@ -56,7 +56,7 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
         if ray.length < deadzone:
             segment = Segment(ray.r, r, ray.mu, region_id, active=False)
         elif ray.length > deadzone:
-            regions[region_id].tot_track_length += segment_d
+            regions[region_id].tot_track_length += segment_d/ray.mu
             ray.active_length += segment_d/ray.mu
             segment = Segment(ray.r, r, ray.mu, region_id, active=True)
 

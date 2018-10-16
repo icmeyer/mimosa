@@ -35,7 +35,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         Amount of deadzone to use in simulation
     
     """
-    start = time.time()
+    start = time.perf_counter()
     print(header)
     rays = []
     print('Laying down tracks')
@@ -47,7 +47,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
-        ray = make_segments(ray_init, surfaces, regions, cutoff_length=300, deadzone = 100)
+        ray = make_segments(ray_init, surfaces, regions, cutoff_length=100, deadzone = 10)
         all_track_length += ray.length
         all_active_length += ray.active_length
         rays.append(ray)
@@ -60,7 +60,6 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
     print('Tracks laid and volume calculated')
 
     if physics:
-
         print('Begin physics')
         counter = 0
         #Initial k and q guess
@@ -86,8 +85,6 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
                 sigma_t = MATERIALS[region.mat]['total']
                 vol = region.vol
                 term = (1/vol/sigma_t)
-                print('transport source', region.mat, term*region.tracks_phi/all_active_length)
-                print('source term', region.mat, region.q/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
                               + region.q/sigma_t)
 
@@ -101,16 +98,17 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
 
             ks.append(k)
             converged = checktol(ks[counter-1], k, tol=1e-5)
-            
-            #Print out flux in each region
-            for region in regions:
-                print(counter, 'Flux in region', region.uid, region.mat, region.phi)
         
         print('k = ', k, ' after ', counter, 'iterations')
-        end = time.time()
+        end = time.perf_counter()
         elapsed_time = end - start
-        print('Elapsed time:           ', elapsed_time)
-        print('Time per active length: ', elapsed_time/all_active_length)
+        segments = 0
+        for ray in rays:
+            for segment in ray.segments:
+                segments += 1
+
+        print('Elapsed time:               ', elapsed_time)
+        print('Time per segment per group: ', elapsed_time/(segments*ngroup))
 
     if plot:
         ktitle ='k='+str(k)+' n_rays='+str(n_rays)

@@ -60,14 +60,9 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
         nuf = MATERIALS[region.mat]['nufission']
         fission_source += np.dot(nuf,phi)
         region_fission_source += np.dot(nuf,phi)
-        # print('fission source', region.mat, region_fission_source)
-        
 
         # scatter is organized by [group out, group in]
-        # region.q += reduction*np.matmul(scatter,phi.T)
         region.q += np.matmul(scatter,phi)
-        # print('scatter source', region.mat, np.matmul(scatter,phi))
-        
 
         #Distribute fission source using xi
         chi = MATERIALS[region.mat]['chi']

@@ -21,10 +21,10 @@ ngroup = 10
 fuelphiguess = np.ones([ngroup,])
 modphiguess = fuelphiguess*0.1
 moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
-                    uid=0, mat='mod', phi=modphiguess)
+                    uid=0, mat='mod', phi=fuelphiguess)
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 1000
+n_rays = 100
 main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
 
