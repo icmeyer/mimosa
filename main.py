@@ -111,7 +111,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         print('Time per segment per group: ', elapsed_time/(segments*ngroup))
 
     if plot:
-        ktitle ='k='+str(k)+' n_rays='+str(n_rays)
+        ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
         print('Plotting tracks')
         plot_from_rays(rays, regions, MATERIALS, length = 3*1.26)
         plot_k(np.arange(counter+1),ks, ktitle)

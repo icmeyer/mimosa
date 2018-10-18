@@ -1,9 +1,15 @@
 import re
 import numpy as np
 from matplotlib import collections as mc
+from matplotlib import rc
 import matplotlib.pyplot as plt
 
 from tools import get_trailing_numbers
+
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
 
 def plotlines(lines='', circles = '', length = 1.26):
     fig, ax = plt.subplots()
@@ -59,7 +65,7 @@ def plot_flux(e_groups, regions):
         legend_names.append((region.mat + ' Region '+str(region.uid)))
     plt.legend(legend_names)
     plt.xlabel('Energy (eV)')
-    plt.ylabel('Normalized Flux cm^{-2}')
+    plt.ylabel('Normalized Flux cm$^{-2}$')
     ax.set_yscale('log')
     ax.set_xscale('log')
     plt.show()

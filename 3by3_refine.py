@@ -7,7 +7,7 @@ from plotting import *
 from region import Region, what_region
 from ray import Ray, make_segments
 
-ngroup = 2
+ngroup = 10
 pitch = 1.26
 length = 1.26*3
 # Surfaces starting with 100 will be circles
@@ -87,6 +87,6 @@ mod9 = Region([xplane2, right, yplane2, bottom, surfaces[fuel_refine_level*8]],[
 region_counter += 1
 regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 
-n_rays = 10
+n_rays = 100
 main(n_rays, surfaces, regions, length, ngroup, plot=True, physics=True)
 
