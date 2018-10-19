@@ -24,17 +24,9 @@ from physics import calc_q, ray_contributions, normalize_phi
 from materials import MATERIALS
 np.random.seed(42)
 
-def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
-    """ Run MOC and write outputs to file 
-
-    Parameters
-    ----------
-    n_rays : int
-        number of rays to simulate
-    deadzone : int
-        Amount of deadzone to use in simulation
-    
-    """
+def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
+        cutoff_length=300, deadzone=50):
+    """ Run MOC and write outputs to file """
     start = time.perf_counter()
     print(header)
     rays = []
@@ -47,7 +39,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
-        ray = make_segments(ray_init, surfaces, regions, cutoff_length=100, deadzone = 10)
+        ray = make_segments(ray_init, surfaces, regions, cutoff_length=cutoff_length, deadzone=deadzone)
         all_track_length += ray.length
         all_active_length += ray.active_length
         rays.append(ray)
@@ -71,11 +63,11 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
         converged = False
         print('Begin iterations')
         # while counter < 2:
-        while not converged:
+        while not converged and counter < 500:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
-            for region in regions:
-                print(counter, 'Flux in region', region.uid, region.mat, region.phi)
+            # for region in regions:
+            #     print(counter, 'Flux in region', region.uid, region.mat, region.phi)
             counter += 1
             print('Iterations: ', counter, ' k = ', k)
             rays = ray_contributions(rays, ngroup, regions)
@@ -108,16 +100,21 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=False):
                 segments += 1
 
         print('Elapsed time:               ', elapsed_time)
-        print('Time per segment per group: ', elapsed_time/(segments*ngroup))
+        try:
+            print('Time per segment per group: ', elapsed_time/(segments*ngroup))
+        except:
+            print('Time per segment per group: n/a')
 
     if plot:
         ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
         print('Plotting tracks')
-        plot_from_rays(rays, regions, MATERIALS, length = 3*1.26)
+        plot_from_rays(rays, regions, MATERIALS, length = length)
         plot_k(np.arange(counter+1),ks, ktitle)
         if ngroup == 10:
             energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
             plot_flux(energy_groups, regions)
+
+    return k, regions
 
 # Helpful snippet below for checking for negative values
 

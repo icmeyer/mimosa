@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from main import main 
 
 from surface import XPlane, YPlane, Circle
@@ -26,5 +27,46 @@ fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
 n_rays = 100
-main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
+# k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
+# Ray Length sensitivity analysis
+ks_ray_length =  []
+lengths = []
+for i in range(100):
+    try:
+        cutoff = 300*i/100+1
+        k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=0)
+        lengths.append(cutoff)
+        ks_ray_length.append(k)
+    except:
+        print('oh well')
+data = np.vstack((lengths, ks_ray_length)).T
+np.savetxt('./sensitivity/cutoff_length_sensitivity_data', data)
+
+ks_dead_zone =  []
+lengths = []
+# Dead zone sensitivity analysis
+for i in range(50):
+    try:
+        dz = 50*i/50
+        k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=50, deadzone=dz)
+        lengths.append(dz)
+        ks_dead_zone.append(k)
+    except:
+        print('oh well')
+data = np.vstack((lengths, ks_dead_zone)).T
+np.savetxt('./sensitivity/dead_zone_sensitivity_data', data)
+
+ks_nrays =  []
+nrays_list = []
+# Dead zone sensitivity analysis
+for i in range(1000):
+    try:
+        n_rays = i
+        k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=300, deadzone=50)
+        nrays_list.append(n_rays)
+        ks_nrays.append(k)
+    except:
+        print('oh well')
+data = np.vstack((nrays_list, ks_nrays)).T
+np.savetxt('./sensitivity/nrays_sensitivity_data', data)
