@@ -63,7 +63,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
         converged = False
         print('Begin iterations')
         # while counter < 2:
-        while not converged and counter < 500:
+        while not converged and counter < 1:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
             # for region in regions:
@@ -80,6 +80,10 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
                 term = (4*pi/vol)
                 # region.phi = (term*region.tracks_phi/all_active_length
                 #               + region.q/sigma_t)
+                print('first term')
+                print(term*region.tracks_phi/all_active_length)
+                print('second term')
+                print(4*pi*region.q)
                 region.phi = (term*region.tracks_phi/all_active_length
                               + 4*pi*region.q)
 
