@@ -1,5 +1,6 @@
 import numpy as np
 from math import pi
+import copy
 
 from materials import MATERIALS
 
@@ -69,6 +70,8 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
         chi = MATERIALS[region.mat]['chi']
         region.q += reduction*chi*region_fission_source/k
         # region.q += chi*region_fission_source/k
+        # print('region q reduced_q')
+        # print([region.mat, region.q/reduction, region.q])
 
 
     if update_k:
@@ -99,7 +102,9 @@ def ray_contributions(rays, ngroup, regions):
         sigma_t = MATERIALS[region.mat]['total']
         reduction = (1/4/pi/sigma_t)
         # psi = regions[ray.segments[0].region].q*reduction
-        psi = regions[ray.segments[0].region].q
+        psi = copy.deepcopy(regions[ray.segments[0].region].q)
+        # print('psi q region r reduction')
+        # print([psi,regions[ray.segments[0].region].q, ray.segments[0].region, ray.segments[0].r0, reduction])
 
         for segment in ray.segments:
             d = segment.d

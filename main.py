@@ -37,6 +37,8 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
     for i in range(n_rays):
         rstart = np.array([rand(),rand()])*length
         polar = (2*rand()-1)*pi/2
+        print('rstart polar')
+        print([rstart,polar])
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
         ray = make_segments(ray_init, surfaces, regions, cutoff_length=cutoff_length, deadzone=deadzone)
@@ -62,8 +64,8 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
         ks = [k]
         converged = False
         print('Begin iterations')
-        # while counter < 2:
-        while not converged and counter < 1:
+        # while counter < 2
+        while not converged and counter < 500:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
             # for region in regions:
@@ -76,14 +78,14 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
             for region in regions:
                 sigma_t = MATERIALS[region.mat]['total']
                 vol = region.vol
-                # term = (1/vol/sigma_t)
-                term = (4*pi/vol)
+                term = (1/vol/sigma_t)
+                # term = (4*pi/vol)
                 # region.phi = (term*region.tracks_phi/all_active_length
                 #               + region.q/sigma_t)
-                print('first term')
-                print(term*region.tracks_phi/all_active_length)
-                print('second term')
-                print(4*pi*region.q)
+                # print('first term')
+                # print(term*region.tracks_phi/all_active_length)
+                # print('second term')
+                # print(4*pi*region.q)
                 region.phi = (term*region.tracks_phi/all_active_length
                               + 4*pi*region.q)
 
