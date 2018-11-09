@@ -76,9 +76,12 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
             for region in regions:
                 sigma_t = MATERIALS[region.mat]['total']
                 vol = region.vol
-                term = (1/vol/sigma_t)
+                # term = (1/vol/sigma_t)
+                term = (4*pi/vol)
+                # region.phi = (term*region.tracks_phi/all_active_length
+                #               + region.q/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
-                              + region.q/sigma_t)
+                              + 4*pi*region.q)
 
                 # Zero out phi counters
                 region.tracks_phi = np.zeros(region.phi.shape)

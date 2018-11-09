@@ -10,7 +10,7 @@ from ray import Ray, make_segments
 
 pitch = 1.26
 circle = Circle(surface_id=1, boundary_type='transmission', x0=pitch/2,
-             y0=pitch/2, R=0.39218) #0.39218
+                y0=pitch/2, R=0.39218) #0.39218
 left = XPlane(surface_id=2, boundary_type='reflection', x0=0)
 right = XPlane(surface_id=3, boundary_type='reflection', x0=pitch)
 top = YPlane(surface_id=4, boundary_type='reflection', y0=pitch)
@@ -34,3 +34,4 @@ lengths = []
 cutoff = 100
 k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=0)
 lengths.append(cutoff)
+ 

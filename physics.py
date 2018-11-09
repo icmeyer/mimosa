@@ -62,18 +62,13 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
         region_fission_source += np.dot(nuf,phi)
 
         # scatter is organized by [group out, group in]
-        region.q += np.matmul(scatter,phi)
+        region.q += reduction*np.matmul(scatter,phi)
+        # region.q += np.matmul(scatter,phi)
 
-        #Distribute fission source using xi
+        # Distribute fission source using xi
         chi = MATERIALS[region.mat]['chi']
-        # region.q += reduction*chi*region_fission_source/k
-        region.q += chi*region_fission_source/k
-        #     ####MIRIAM BIT
-        #     if idx == 0:
-        #         region.q[group] = 0
-        #     elif idx == 1 and group == 1:
-        #         region.q[group] = 0
-        # print('region', idx, region.mat, region.q)
+        region.q += reduction*chi*region_fission_source/k
+        # region.q += chi*region_fission_source/k
 
 
     if update_k:
@@ -102,23 +97,38 @@ def ray_contributions(rays, ngroup, regions):
         # Calculate initial psi
         region = regions[ray.segments[0].region]
         sigma_t = MATERIALS[region.mat]['total']
-        psi = regions[ray.segments[0].region].q/(4*pi*sigma_t)
+        reduction = (1/4/pi/sigma_t)
+        # psi = regions[ray.segments[0].region].q*reduction
+        psi = regions[ray.segments[0].region].q
 
         for segment in ray.segments:
             d = segment.d
             region = regions[segment.region]
             sigma_t = MATERIALS[region.mat]['total']
+            reduction = (1/4/pi/sigma_t)
             
             #Energy "loop"
             q = region.q
             # Calculate delta_psi
             tau = sigma_t*d
-            delta_psi = (psi - q*(1/4/pi/sigma_t))*(1-np.exp(-tau))
+            # delta_psi = (psi - q*reduction)*(1-np.exp(-tau))
+            delta_psi = (psi - q)*(1-np.exp(-tau))
+            # print('delta_psi')
+            # print(delta_psi)
+            # print('reduction')
+            # print(reduction)
+            # print('q times reduction')
+            # print(q*reduction)
+
 
             if segment.active:
                 region.tracks_phi += 4*pi*delta_psi
                 
             psi -= delta_psi
+            # print('delta_psi')
+            # print(delta_psi)
+            # print('psi')
+            # print(psi)
             
             # WORKING
             # for group in range(ngroup):
