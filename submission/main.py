@@ -62,7 +62,7 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
         ks = [k]
         converged = False
         print('Begin iterations')
-        # while counter < 2
+        # while counter < 2:
         while not converged and counter < 500:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
@@ -78,14 +78,14 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
                 vol = region.vol
                 term = (1/vol/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
-                              + 4*pi*region.q)
+                              + region.q/sigma_t)
 
                 # Zero out phi counters
                 region.tracks_phi = np.zeros(region.phi.shape)
                 region.q_phi = np.zeros(region.phi.shape)
 
             fission_source_new, k = calc_q(regions, ngroup, k, update_k=True, 
-                                           old_fission_source=fission_source_old)
+                                           old_fission_source = fission_source_old)
             fission_source_old = fission_source_new
 
             ks.append(k)

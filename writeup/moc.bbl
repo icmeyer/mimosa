@@ -1,0 +1,23 @@
+\providecommand{\noopsort}[1]{}\providecommand{\singleletter}[1]{#1}%
+\begin{thebibliography}{1}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{tramm_2017}
+J.~R. {Tramm}, K.~S. {Smith}, B.~{Forget}, A.~R. {Siegel}, {The Random Ray
+  Method for neutral particle transport}, Journal of Computational Physics 342
+  (2017) 229--252.
+\newblock \href {http://dx.doi.org/10.1016/j.jcp.2017.04.038}
+  {\path{doi:10.1016/j.jcp.2017.04.038}}.
+
+\bibitem{boyd_2014}
+W.~Boyd, S.~Shaner, L.~Li, B.~Forget, K.~Smith, The openmoc method of
+  characteristics neutral particle transport code, Annals of Nuclear Energy 68
+  (2014) 43–52.
+\newblock \href {http://dx.doi.org/10.1016/j.anucene.2013.12.012}
+  {\path{doi:10.1016/j.anucene.2013.12.012}}.
+
+\end{thebibliography}

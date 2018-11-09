@@ -10,7 +10,7 @@ from ray import Ray, make_segments
 
 pitch = 1.26
 circle = Circle(surface_id=1, boundary_type='transmission', x0=pitch/2,
-                y0=pitch/2, R=0.39218) #0.39218
+             y0=pitch/2, R=0.39218) #0.39218
 left = XPlane(surface_id=2, boundary_type='reflection', x0=0)
 right = XPlane(surface_id=3, boundary_type='reflection', x0=pitch)
 top = YPlane(surface_id=4, boundary_type='reflection', y0=pitch)
@@ -26,12 +26,19 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 1000
+n_rays = 100
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
-lengths = []
-
-cutoff = 300
-k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=50)
-lengths.append(cutoff)
- 
+ks_nrays =  []
+nrays_list = []
+# Dead zone sensitivity analysis
+for i in range(100):
+    try:
+        n_rays = i*10
+        k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=300, deadzone=50)
+        nrays_list.append(n_rays)
+        ks_nrays.append(k)
+    except:
+        print('oh well')
+data = np.vstack((nrays_list, ks_nrays)).T
+np.savetxt('./sensitivity/nrays_sensitivity_data_2', data)

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<tallies>
+  <filter id="30" type="cell">
+    <bins>1 2</bins>
+  </filter>
+  <filter id="2" type="energy">
+    <bins>0.0 1000.0 20000000.0</bins>
+  </filter>
+  <filter id="5" type="energyout">
+    <bins>0.0 1000.0 20000000.0</bins>
+  </filter>
+  <filter id="6" type="legendre">
+    <order>0</order>
+  </filter>
+  <filter id="9" type="energy">
+    <bins>0.0 20000000.0</bins>
+  </filter>
+  <tally id="27">
+    <filters>30 2</filters>
+    <nuclides>total</nuclides>
+    <scores>flux total nu-fission</scores>
+    <estimator>tracklength</estimator>
+  </tally>
+  <tally id="18">
+    <filters>30 2</filters>
+    <nuclides>total</nuclides>
+    <scores>flux</scores>
+    <estimator>analog</estimator>
+  </tally>
+  <tally id="19">
+    <filters>30 2 5 6</filters>
+    <nuclides>total</nuclides>
+    <scores>scatter</scores>
+    <estimator>analog</estimator>
+  </tally>
+  <tally id="22">
+    <filters>30 9</filters>
+    <nuclides>total</nuclides>
+    <scores>nu-fission</scores>
+    <estimator>analog</estimator>
+  </tally>
+  <tally id="23">
+    <filters>30 5</filters>
+    <nuclides>total</nuclides>
+    <scores>nu-fission</scores>
+    <estimator>analog</estimator>
+  </tally>
+</tallies>

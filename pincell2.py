@@ -10,7 +10,7 @@ from ray import Ray, make_segments
 
 pitch = 1.26
 circle = Circle(surface_id=1, boundary_type='transmission', x0=pitch/2,
-                y0=pitch/2, R=0.39218) #0.39218
+             y0=pitch/2, R=0.39218) #0.39218
 left = XPlane(surface_id=2, boundary_type='reflection', x0=0)
 right = XPlane(surface_id=3, boundary_type='reflection', x0=pitch)
 top = YPlane(surface_id=4, boundary_type='reflection', y0=pitch)
@@ -18,7 +18,7 @@ bottom = YPlane(surface_id=5, boundary_type='reflection', y0=0)
 
 surfaces = [circle, left, right, top, bottom]
 
-ngroup = 10
+ngroup = 2
 fuelphiguess = np.ones([ngroup,])
 modphiguess = fuelphiguess*0.1
 moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
@@ -26,12 +26,5 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 1000
-# k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
-
-lengths = []
-
-cutoff = 300
-k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=50)
-lengths.append(cutoff)
- 
+n_rays = 4
+k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=True)
