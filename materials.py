@@ -1,3 +1,4 @@
+import os 
 import numpy as np
 from main import NGROUP
 
@@ -14,7 +15,8 @@ def import_xs(ngroup):
        dictionary containing the cross section information for materials in the
        problem
    """
-   folder = './make_xs/xs_'+str(ngroup)+'group/'
+   mimosa_dir = os.path.dirname(os.path.realpath(__file__))
+   folder = mimosa_dir+'/make_xs/xs_'+str(ngroup)+'group/'
    fuel_file = '_cell_1'
    mod_file = '_cell_0'
    MATERIALS = {'fuel': {'total': np.loadtxt(folder+'total'+fuel_file),

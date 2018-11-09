@@ -1,3 +1,8 @@
+import os
+import sys
+mimosa_dir = os.path.dirname(os.getcwd())
+sys.path.insert(0, mimosa_dir)
+
 import numpy as np
 from main import main 
 

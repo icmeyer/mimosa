@@ -1,3 +1,8 @@
+import os
+import sys
+mimosa_dir = os.path.dirname(os.getcwd())
+sys.path.insert(0, mimosa_dir)
+
 import numpy as np
 import copy
 from main import main 
@@ -7,6 +12,7 @@ from tools import normalize, intersection
 from plotting import *
 from region import Region
 from ray import Ray, make_segments
+print('here')
 
 pitch = 1.26
 circle = Circle(surface_id=1, boundary_type='transmission', x0=pitch/2,
