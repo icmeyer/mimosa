@@ -24,7 +24,7 @@ def normalize_q(regions, ngroup):
         for group in range(ngroup):
             region.q[group] = region.q[group]/q_sum
 
-def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
+def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0):
     """Updates the q's of the regions and returns a total q
 
     Parameters
@@ -48,34 +48,47 @@ def calc_q(regions, ngroup, k, update_k=False, old_fission_source=0):
     """
 
     fission_source = 0
+    a_fission_source = 0 
     for idx, region in enumerate(regions):
         # Get materials properties for this region
         scatter = MATERIALS[region.mat]['scatter']
+        a_scatter = scatter.transpose()
         sigma_t = MATERIALS[region.mat]['total']
         nuf = MATERIALS[region.mat]['nufission']
         chi = MATERIALS[region.mat]['chi']
 
         phi = region.phi
+        a_phi = region.a_phi
         region_fission_source = 0
+        region_a_fission_source = 0
         region.q = np.zeros([len(phi),])
+        region.a_q = np.zeros([len(phi),])
 
         # Energy 'loop'
         # Calculate region fission source
-        fission_source += np.dot(nuf,phi)
-        region_fission_source += np.dot(nuf,phi)
+        # Total tracker
+        fission_source += np.dot(nuf, phi)
+        a_fission_source += np.dot(nuf, a_phi)
+        # Region tracker
+        region_fission_source += np.dot(nuf, phi)
+        region_a_fission_source += np.dot(nuf, a_phi)
 
         # Distribute fission source using xi
         q_fission = chi*region_fission_source/k
+        a_q_fission = chi*region_a_fission_source/a_k
         # scatter is organized by [group out, group in]
         q_scatter = np.matmul(scatter,phi)
+        a_q_scatter = np.matmul(a_scatter,phi)
 
         reduction = (1/4/pi/sigma_t)
         region.q += reduction*(q_scatter + q_fission)
+        region.a_q += reduction*(a_q_scatter + a_q_fission)
 
     if update_k:
         k = fission_source/old_fission_source
+        a_k = a_fission_source/old_fission_source
     # normalize_q(regions, ngroup)
-    return fission_source/k, k
+    return fission_source/k, k, a_k
 
 
 def ray_contributions(rays, ngroup, regions):
@@ -97,6 +110,7 @@ def ray_contributions(rays, ngroup, regions):
     for ray in rays:
         # Calculate initial psi
         psi = copy.deepcopy(regions[ray.segments[0].region].q)
+        a_psi = copy.deepcopy(regions[ray.segments[0].region].a_q)
 
         for segment in ray.segments:
             d = segment.d
@@ -105,11 +119,15 @@ def ray_contributions(rays, ngroup, regions):
             
             #Energy "loop" performed by vectors here
             q = region.q
+            a_q = region.a_q
             tau = sigma_t*d
-            delta_psi = (psi - q)*(1-np.exp(-tau))
+            exp_term = (1-np.exp(-tau))
+            delta_psi = (psi - q)*exp_term
+            delta_a_psi = (a_psi - a_q)*exp_term
 
             if segment.active:
                 region.tracks_phi += 4*pi*delta_psi
+                region.tracks_a_phi += 4*pi*delta_a_psi
                 
             psi -= delta_psi
             

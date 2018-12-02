@@ -56,7 +56,7 @@ def plot_k(iterations, ks, title):
     plt.savefig('ks.png')
     plt.show()
 
-def plot_flux(e_groups, regions):
+def plot_flux(e_groups, regions, adjoint=False):
     fig, ax = plt.subplots()
     legend_names = []
     for region in regions:
@@ -69,10 +69,20 @@ def plot_flux(e_groups, regions):
     ax.set_yscale('log')
     ax.set_xscale('log')
     plt.show()
-        
 
-
-
+    if adjoint:
+        fig, ax = plt.subplots()
+        legend_names = []
+        for region in regions:
+            flux = np.insert(region.a_phi[::-1],0,0)
+            plt.step(e_groups, flux)
+            legend_names.append((region.mat + ' Region '+str(region.uid)))
+        plt.legend(legend_names)
+        plt.xlabel('Energy (eV)')
+        plt.ylabel('Adjoint Normalized Flux cm$^{-2}$')
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        plt.show()
 
 
 if __name__ == '__main__':

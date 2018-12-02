@@ -25,17 +25,22 @@ class Region():
     mat : str, opt
         name of material contained within surface
     """
-    def __init__(self, surfaces, orientations, uid, mat = [], phi=0, vol=0):
+    def __init__(self, surfaces, orientations, uid, mat = [], phi=0, a_phi=0, 
+                 vol=0):
         self.surfaces = surfaces
         self.orientations = orientations
         self.uid = uid
         self.mat = mat
         self.phi = phi
+        self.a_phi = phi
         self.vol = vol
 
         self.q = np.zeros([len(phi),])
+        self.a_q = np.zeros([len(phi),])
         self.tracks_phi = np.zeros([len(phi),])
+        self.tracks_a_phi = np.zeros([len(phi),])
         self.q_phi = np.zeros([len(phi),])
+        self.a_q_phi = np.zeros([len(phi),])
         self.tot_track_length = 0
 
     def evaluate(cls, r):

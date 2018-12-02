@@ -24,9 +24,16 @@ from physics import calc_q, ray_contributions, normalize_phi
 from materials import MATERIALS
 np.random.seed(42)
 
-def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
+def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
         cutoff_length=300, deadzone=50):
-    """ Run MOC and write outputs to file """
+    """ Run MOC and write outputs to file 
+
+    Parameters
+    ----------
+    limits : list
+        [xmin, xmax, ymin, ymax]
+
+    """
     start = time.perf_counter()
     print(header)
     rays = []
@@ -35,7 +42,9 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
     all_active_length = 0
     # Initiate rays and fill each with segments
     for i in range(n_rays):
-        rstart = np.array([rand(),rand()])*length
+        rstart = np.zeros(2)
+        rstart[0] = rand()*(limits[1]-limits[0])+limits[0]
+        rstart[1] = rand()*(limits[3]-limits[2])+limits[2]
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
@@ -54,15 +63,17 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
     if physics:
         print('Begin physics')
         counter = 0
-        #Initial k and q guess
+        #Initial k, a_k, and q guess
         k = 1
+        a_k = 1
         print('Calculating initial q')
-        fission_source_old, k = calc_q(regions, ngroup, k)
+        fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k)
 
         ks = [k]
+        a_ks = [a_k]
         converged = False
         print('Begin iterations')
-        # while counter < 2
+        # while counter < 3:
         while not converged and counter < 500:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
@@ -79,19 +90,29 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
                 term = (1/vol/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
                               + 4*pi*region.q)
+                region.a_phi = (term*region.tracks_a_phi/all_active_length
+                              + 4*pi*region.a_q)
 
                 # Zero out phi counters
                 region.tracks_phi = np.zeros(region.phi.shape)
+                region.tracks_a_phi = np.zeros(region.phi.shape)
                 region.q_phi = np.zeros(region.phi.shape)
 
-            fission_source_new, k = calc_q(regions, ngroup, k, update_k=True, 
-                                           old_fission_source=fission_source_old)
+            fission_source_new, k, a_k = calc_q(regions, ngroup, k, a_k, 
+                                                update_k=True, old_fission_source=fission_source_old)
             fission_source_old = fission_source_new
 
             ks.append(k)
-            converged = checktol(ks[counter-1], k, tol=1e-5)
+            a_ks.append(a_k)
+            converged = checktol(ks[counter-1], k, tol=1e-5) &  \
+                        checktol(a_ks[counter-1], a_k, tol=1e-5)
+
+            # for region in regions:
+            #     print(region.mat)
+            #     print(region.phi)
+            #     print(region.a_phi)
         
-        print('k = ', k, ' after ', counter, 'iterations')
+        print('k = ', k, ' and a_k = ', a_k, ' after ', counter, 'iterations')
         end = time.perf_counter()
         elapsed_time = end - start
         segments = 0
@@ -108,13 +129,14 @@ def main(n_rays, surfaces, regions, length, ngroup, plot=False, physics=True,
     if plot:
         ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
         print('Plotting tracks')
+        length = np.amax([limits[1]-limits[0],limits[3]-limits[2]])
         plot_from_rays(rays, regions, MATERIALS, length = length)
         plot_k(np.arange(counter+1),ks, ktitle)
         if ngroup == 10:
             energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
-            plot_flux(energy_groups, regions)
+            plot_flux(energy_groups, regions, adjoint = True)
 
-    return k, regions
+    return k, a_k, regions
 
 # Helpful snippet below for checking for negative values
 
