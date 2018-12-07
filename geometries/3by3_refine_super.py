@@ -6,10 +6,10 @@ sys.path.insert(0, mimosa_dir)
 import numpy as np
 from main import main 
 
-from surface import XPlane, YPlane, Circle
+from surface import SuperSurface, XPlane, YPlane, Circle
 from tools import normalize
 from plotting import *
-from region import Region, what_region
+from region import SuperRegion, Region, what_region
 from ray import Ray, make_segments
 
 ngroup = 10
@@ -24,7 +24,7 @@ circ_counter = 100
 xcoords = [2*1.26+1.26/2, 1*1.26+1.26/2, 0*1.26+1.26/2]
 ycoords = xcoords
 
-fuel_refine_level = 3
+fuel_refine_level = 5
 # Biggest radius first
 radii = np.linspace(0,0.39218,fuel_refine_level+1)[:0:-1]
 
@@ -39,7 +39,8 @@ for i in range(3):
             if level == 0:
                 super_surface_ext = circle
             sub_surfaces.append(circle)
-        super_surface = SuperSurface(circ_counter, surfaces, super_surface_ext)
+        super_surface = SuperSurface(circ_counter, surfaces, super_surface_ext,
+                                     boundary_type='transmission')
         super_surfaces.append(super_surface)
 
 
@@ -54,6 +55,7 @@ bottom = YPlane(surface_id=208, boundary_type='reflection', y0=0)
 
 
 surfaces += [left, xplane1, xplane2, right, top, yplane1, yplane2, bottom]
+super_surfaces += [left, xplane1, xplane2, right, top, yplane1, yplane2, bottom]
 # Regions: current limitation, uid of region must be its order in the list
 regions = []
 super_regions = []
@@ -68,14 +70,13 @@ for i in range(9):
         fuel = Region([surfaces[outer+level], surfaces[outer+level+1]], [-1, 1], uid=region_counter, mat='fuel',phi=fuel_phi_guess)
         region_counter += 1
         regions.append(fuel)
-        if level == 0:
-            sub_regions.append(fuel)
+        sub_regions.append(fuel)
     # Make donut hole
     fuel = Region([surfaces[inner]], [-1], uid=region_counter, mat='fuel',phi=fuel_phi_guess)
     region_counter += 1
     regions.append(fuel)
     sub_regions.append(fuel)
-    super_region = SuperRegion(sub_regions, surfaces[outer], [-1], uid=i)
+    super_region = SuperRegion(sub_regions, [surfaces[outer]], [-1], uid=i)
     super_regions.append(super_region)
 
 mod_phi_guess = np.ones([ngroup,])*0.1
@@ -107,8 +108,11 @@ mod9 = Region([xplane2, right, yplane2, bottom, surfaces[fuel_refine_level*8]],[
                     uid=region_counter, mat='mod', phi = mod_phi_guess)
 region_counter += 1
 regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
+super_regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 
-n_rays = 10
+n_rays = 100
 main(n_rays, surfaces, regions, limits, ngroup, super_regions = super_regions,
-     super_surfaces = super_surfaces, plot=True)
+     super_surfaces = [], plot=True)
+# main(n_rays, surfaces, regions, limits, ngroup, super_regions = [],
+#      super_surfaces = [], plot=True)
 

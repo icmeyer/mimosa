@@ -12,11 +12,12 @@ header = """
 import re
 import numpy as np
 import time
+import sys
 from numpy.random import random_sample as rand
 from math import pi
 
-from surface import XPlane, YPlane, Circle
-from tools import normalize, intersection, checktol
+from surface import XPlane, YPlane, Circle, intersection
+from tools import normalize, checktol
 from plotting import *
 from region import Region
 from ray import Ray, make_segments
@@ -24,8 +25,9 @@ from physics import calc_q, ray_contributions, normalize_phi
 from materials import MATERIALS
 np.random.seed(42)
 
-def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
-        cutoff_length=300, deadzone=50):
+def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
+        cutoff_length=100, deadzone=0, super_regions=[],
+        super_surfaces=[]):
     """ Run MOC and write outputs to file 
 
     Parameters
@@ -34,21 +36,40 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
         [xmin, xmax, ymin, ymax]
 
     """
+    # Assign regions and surfaces for ray tracing if no heirarchal
+    # data is given 
+    if super_regions == []:
+        super_regions = regions
+    if super_surfaces == []:
+        super_surfaces = surfaces
+
+
+    physics = True
+
     start = time.perf_counter()
     print(header)
     rays = []
     print('Laying down tracks')
+    track_time_0 = time.perf_counter()
     all_track_length = 0
     all_active_length = 0
+
+    one_percent = np.max([np.floor(n_rays/100),1])
     # Initiate rays and fill each with segments
     for i in range(n_rays):
+        if i%one_percent == 0:
+            sys.stdout.write("\r{0:.0%}".format(i/n_rays))
+            sys.stdout.flush()
         rstart = np.zeros(2)
         rstart[0] = rand()*(limits[1]-limits[0])+limits[0]
         rstart[1] = rand()*(limits[3]-limits[2])+limits[2]
         polar = (2*rand()-1)*pi/2
         theta = rand()*2*pi
         ray_init = Ray(r=rstart, theta=theta, varphi=polar)
-        ray = make_segments(ray_init, surfaces, regions, cutoff_length=cutoff_length, deadzone=deadzone)
+        ray = make_segments(ray_init, surfaces, regions, 
+                            cutoff_length=cutoff_length, deadzone=deadzone,
+                            super_surfaces = super_surfaces, 
+                            super_regions = super_regions)
         all_track_length += ray.length
         all_active_length += ray.active_length
         rays.append(ray)
@@ -59,6 +80,8 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
         print('Region vol:', region.mat, region.vol)
 
     print('Tracks laid and volume calculated')
+    track_time_1 = time.perf_counter()
+    print('Track laying time: ', track_time_1-track_time_0)
 
     if physics:
         print('Begin physics')
@@ -74,7 +97,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
         converged = False
         print('Begin iterations')
         # while counter < 3:
-        while not converged and counter < 500:
+        while not converged and counter < 300:
             normalize_phi(regions, ngroup)
             #Print out flux in each region
             # for region in regions:
@@ -126,15 +149,19 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False, physics=True,
         except:
             print('Time per segment per group: n/a')
 
+    for region in regions:
+        print('Region', region.mat, region.phi)
+
     if plot:
         ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
         print('Plotting tracks')
         length = np.amax([limits[1]-limits[0],limits[3]-limits[2]])
         plot_from_rays(rays, regions, MATERIALS, length = length)
-        plot_k(np.arange(counter+1),ks, ktitle)
+        # plot_k(np.arange(counter+1),ks, ktitle)
+        plot_flux_on_geometry(ngroup, regions, rays, length)
         if ngroup == 10:
             energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
-            plot_flux(energy_groups, regions, adjoint = True)
+            # plot_flux(energy_groups, regions, adjoint = True)
 
     return k, a_k, regions
 

@@ -14,6 +14,7 @@ from region import Region
 from ray import Ray, make_segments
 
 pitch = 1.26
+limits = [0, pitch, 0, pitch]
 circle = Circle(surface_id=1, boundary_type='transmission', x0=pitch/2,
                 y0=pitch/2, R=0.39218) #0.39218
 left = XPlane(surface_id=2, boundary_type='reflection', x0=0)
@@ -31,13 +32,15 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 10
+n_rays = 100
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
 lengths = []
 
-cutoff = 100
-k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup,plot=True, cutoff_length=cutoff, deadzone=10)
+cutoff = 10
+k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), limits,
+                             ngroup, plot=True, cutoff_length=cutoff,
+                             deadzone=10)
 # k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=10)
 lengths.append(cutoff)
  

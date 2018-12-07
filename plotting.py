@@ -3,10 +3,11 @@ import numpy as np
 from matplotlib import collections as mc
 from matplotlib import rc
 import matplotlib.pyplot as plt
+import matplotlib
 
 from tools import get_trailing_numbers
 
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
 rc('text', usetex=True)
@@ -15,9 +16,9 @@ def plotlines(lines='', circles = '', length = 1.26):
     fig, ax = plt.subplots()
 
     if lines:
-        lc = mc.LineCollection(lines[0], colors = lines[1],  linewidths=1)
-        # lc = mc.LineCollection(lines[0], lines[1])
+        lc = mc.LineCollection(lines[0], colors=lines[1],  linewidths=1)
         ax.add_collection(lc)
+        # lc = mc.LineCollection(lines[0], lines[1])
     if circles:
         for circle in circles:
             pltcircle = plt.Circle(circle[0], circle[1], color=circle[2],
@@ -28,7 +29,7 @@ def plotlines(lines='', circles = '', length = 1.26):
     ax.set_ylim([-0.1,length+0.1])
     ax.margins(0.1)
     ax.set_aspect(1.0)
-    plt.show()
+    return fig, ax
 
 def plot_from_rays(rays, regions, MATERIALS, length=1.26):
     fuelcolors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple',
@@ -46,7 +47,8 @@ def plot_from_rays(rays, regions, MATERIALS, length=1.26):
             elif mat == 'fuel':
                 linecols.append(fuelcolors[segment.region%10])
     lines = [linesegs, linecols]
-    plotlines(lines=lines,length=length)
+    fig, ax = plotlines(lines=lines,length=length)
+    fig.show()
 
 def plot_k(iterations, ks, title):
     plt.scatter(iterations, ks)
@@ -83,6 +85,34 @@ def plot_flux(e_groups, regions, adjoint=False):
         ax.set_yscale('log')
         ax.set_xscale('log')
         plt.show()
+
+def plot_flux_on_geometry(ngroup, regions, rays, length):
+    e_group = 1
+    fluxes = []
+    for region in regions:
+        fluxes.append(region.phi[ngroup-1])
+    max_flux = np.amax(fluxes)
+    cmap = matplotlib.cm.coolwarm
+    norm = matplotlib.colors.Normalize(vmin=0.0, vmax=max_flux)
+
+    linesegs = []
+    linecols = []
+    for ray in rays:
+        for segment in ray.segments:
+            linesegs.append([segment.r0,segment.r1])
+            phi = regions[segment.region].phi[ngroup-1]
+            linecols.append(cmap(norm(phi)))
+    lines = [linesegs, linecols]
+    fig, ax = plotlines(lines=lines,length=length)
+
+    fig.subplots_adjust(right = 0.8)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.06, 0.7])
+    cbl = matplotlib.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm)
+    cbl.set_label('Flux')
+    # fig.colorbar(ims[0], cax=cbar_ax)
+    plt.show()
+
+
 
 
 if __name__ == '__main__':

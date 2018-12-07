@@ -2,9 +2,10 @@ import numpy as np
 import cmath
 
 from region import what_region
-from tools import intersection
+from surface import intersection
 
-def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
+def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50,
+                  super_surfaces=[], super_regions=[]):
     """Make segments using a ray with an initial location and direction
 
     Parameters
@@ -25,15 +26,21 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50):
     ray : Ray object
         A ray object with populated segments attribute
     """
+    # Assign regions and surfaces for ray tracing if no heirarchal
+    # data is given 
+    if super_regions == []:
+        super_regions = regions
+    if super_surfaces == []:
+        super_surfaces = surfaces
 
     while ray.length < cutoff_length:
         # Find current region by iterating through surfaces
-        region_id = what_region(ray.r, regions)
+        region_id = what_region(ray.r, super_regions)
         r1 = []
         d_to_beat = np.Inf
 
         # Find nearest surface to intersect with
-        for surface in surfaces:
+        for surface in super_surfaces:
             intersect_out = intersection(ray.r, ray.u, surface)
             for loc_dist_pair in intersect_out:
                 r1 = loc_dist_pair[0]
