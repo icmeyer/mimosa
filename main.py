@@ -1,13 +1,3 @@
-NGROUP = 10
-header = """
-  _  _  __  _  _   __   ____   __   
- ( \/ )(  )( \/ ) /  \ / ___) / _\  
- / \/ \ )( / \/ \(  O )\___ \/    \ 
- \_)(_/(__)\_)(_/ \__/ (____/\_/\_/ 
- 
- """
-#MOC Is Magic, Onerous, Silly, and Awesome
-                                    
 # This file will drive the simulation
 import re
 import numpy as np
@@ -17,13 +7,16 @@ from numpy.random import random_sample as rand
 from math import pi
 
 from surface import XPlane, YPlane, Circle, intersection
-from tools import normalize, checktol
+from tools import *
 from plotting import *
 from region import Region
 from ray import Ray, make_segments
 from physics import calc_q, ray_contributions, normalize_phi
-from materials import MATERIALS
+from materials import import_xs
+from perturbation import *
+from header import *
 np.random.seed(42)
+
 
 def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         cutoff_length=100, deadzone=0, super_regions=[],
@@ -36,6 +29,9 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         [xmin, xmax, ymin, ymax]
 
     """
+    # Import materials library
+    MATERIALS = import_xs(ngroup)
+
     # Assign regions and surfaces for ray tracing if no heirarchal
     # data is given 
     if super_regions == []:
@@ -45,6 +41,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
 
 
     physics = True
+    perturbation = True
 
     start = time.perf_counter()
     print(header)
@@ -77,6 +74,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
     for region in regions:
         # Assign volumes
         region.vol = region.tot_track_length/all_active_length
+        sys.stdout.write("\n")
         print('Region vol:', region.mat, region.vol)
 
     print('Tracks laid and volume calculated')
@@ -90,20 +88,21 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         k = 1
         a_k = 1
         print('Calculating initial q')
-        fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k)
+        fission_source_old, a_fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k)
 
         ks = [k]
         a_ks = [a_k]
         converged = False
+        phi_conv_flag = False
         print('Begin iterations')
         # while counter < 3:
         while not converged and counter < 300:
-            normalize_phi(regions, ngroup)
+            # normalize_phi(regions, ngroup)
             #Print out flux in each region
             # for region in regions:
             #     print(counter, 'Flux in region', region.uid, region.mat, region.phi)
             counter += 1
-            print('Iterations: ', counter, ' k = ', k)
+            print('Iterations: ', counter, ' k = ', k, ' a_k = ', a_k)
             rays = ray_contributions(rays, ngroup, regions)
 
             #Update phi and set counter to 0 for next iteration
@@ -111,6 +110,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
                 sigma_t = MATERIALS[region.mat]['total']
                 vol = region.vol
                 term = (1/vol/sigma_t)
+                # term = (1/sigma_t)
                 region.phi = (term*region.tracks_phi/all_active_length
                               + 4*pi*region.q)
                 region.a_phi = (term*region.tracks_a_phi/all_active_length
@@ -121,14 +121,28 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
                 region.tracks_a_phi = np.zeros(region.phi.shape)
                 region.q_phi = np.zeros(region.phi.shape)
 
-            fission_source_new, k, a_k = calc_q(regions, ngroup, k, a_k, 
-                                                update_k=True, old_fission_source=fission_source_old)
+            fission_source_new, a_fission_source_new, k, a_k = calc_q(regions, ngroup, k, a_k, 
+                                                update_k=True, old_fission_source=fission_source_old, old_a_fission_source=a_fission_source_old)
+
+            print(fission_source_old, a_fission_source_old)
+
             fission_source_old = fission_source_new
+            a_fission_source_old = a_fission_source_new
 
             ks.append(k)
             a_ks.append(a_k)
-            converged = checktol(ks[counter-1], k, tol=1e-5) &  \
-                        checktol(a_ks[counter-1], a_k, tol=1e-5)
+            converged = checktol(ks[counter-1], k, tol=1e-6) & \
+                        checktol(a_ks[counter-1], a_k, tol=1e-5) & \
+                        phi_conv_flag
+
+            if counter==1:
+                old_a_phi = collect_phi(regions, adjoint=True)
+            else:
+                phi_conv_flag, new_a_phi = check_phi_convergence(regions,
+                                                                 old_a_phi,
+                                                                 adjoint=True)
+                old_a_phi = new_a_phi
+
 
             # for region in regions:
             #     print(region.mat)
@@ -149,19 +163,32 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         except:
             print('Time per segment per group: n/a')
 
-    for region in regions:
-        print('Region', region.mat, region.phi)
-
+    # normalize_phi(regions, ngroup, adjoint=True)
     if plot:
         ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
-        print('Plotting tracks')
         length = np.amax([limits[1]-limits[0],limits[3]-limits[2]])
+        print('Plotting tracks')
         plot_from_rays(rays, regions, MATERIALS, length = length)
         # plot_k(np.arange(counter+1),ks, ktitle)
-        plot_flux_on_geometry(ngroup, regions, rays, length)
+        print('Plotting forward flux')
+        plot_all_flux_on_geometry(ngroup, regions, rays, length)
+        print('Plotting adjoint flux')
+        plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=True)
+        e_group = 0
+        plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
+        # e_group = ngroup
+        # plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
+        # e_group = 1
+        # plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=False)
         if ngroup == 10:
             energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
-            # plot_flux(energy_groups, regions, adjoint = True)
+            plot_flux(energy_groups, regions, adjoint = True)
+        plt.show()
+
+    if perturbation:
+        calc_perturbation(regions, MATERIALS, k, a_k)
+
+            
 
     return k, a_k, regions
 

@@ -138,11 +138,13 @@ settings.source = openmc.Source(space=space)
 
 
 # Define the 8-group energy bounds.
-ngroup = 2
+ngroup = 1
 if ngroup==10:
     e_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
 elif ngroup==2:
     e_groups = [0.0, 1000, 20e6]
+elif ngroup==1:
+    e_groups = [0.0, 20e6]
 groups = openmc.mgxs.EnergyGroups(e_groups)
 
 
@@ -165,7 +167,6 @@ mgxs_lib.correction = None
 
 
 # Set the desired MGXS data.
-# TODO: what data is needed?
 mgxs_lib.mgxs_types = ('total', 'scatter matrix', 'chi', 'nu-fission')
 
 

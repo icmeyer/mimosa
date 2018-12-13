@@ -4,16 +4,18 @@ mimosa_dir = os.path.dirname(os.getcwd())
 sys.path.insert(0, mimosa_dir)
 
 import numpy as np
+import copy
 from main import main 
 
-from surface import XPlane, YPlane, Circle
-from tools import normalize, intersection
+from surface import XPlane, YPlane, Circle, intersection
+from tools import normalize
 from plotting import *
-from region import Region, what_region
+from region import Region
 from ray import Ray, make_segments
 
 ngroup = 10
 pitch = 1.26
+limits = [0, pitch, 0, pitch]
 # Surfaces starting with 100 will be circles
 # Surfaces starting with 200 will be planes
 surfaces = []
@@ -21,7 +23,7 @@ circ_counter = 100
 xcoord = pitch/2
 ycoord = xcoord
 
-fuel_refine_level = 8
+fuel_refine_level = 16
 # Biggest radius first
 radii = np.linspace(0,0.39218,fuel_refine_level+1)[:0:-1]
 
@@ -61,5 +63,7 @@ region_counter += 1
 regions += [mod1]
 
 n_rays = 10
-main(n_rays, surfaces, regions, pitch, ngroup, plot=True, physics=True)
-
+cutoff = 100
+k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), limits,
+                             ngroup, plot=True, cutoff_length=cutoff,
+                             deadzone=10)

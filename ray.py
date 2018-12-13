@@ -1,5 +1,6 @@
 import numpy as np
 import cmath
+import copy
 
 from region import what_region
 from surface import intersection
@@ -33,6 +34,8 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50,
     if super_surfaces == []:
         super_surfaces = surfaces
 
+    from_vacuum = False
+    # Build up ray with segments
     while ray.length < cutoff_length:
         # Find current region by iterating through surfaces
         region_id = what_region(ray.r, super_regions)
@@ -67,6 +70,7 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50,
             ray.active_length += segment_d/ray.mu
             segment = Segment(ray.r, r, ray.mu, region_id, active=True)
 
+        segment.from_vacuum = copy.deepcopy(from_vacuum)
         ray.segments.append(segment)
         ray.r = r
         d_to_beat = cutoff_length
@@ -74,10 +78,19 @@ def make_segments(ray, surfaces, regions, cutoff_length=300, deadzone=50,
         # Change r and u in ray and find new surface
         if boundary == 'transmission':
             ray.u = ray.u
+            from_vacuum = False
         elif boundary == 'reflection' and col_surface.type == 'x-plane':
             ray.u = np.array([-ray.u[0], ray.u[1]])
+            from_vacuum = False
         elif boundary == 'reflection' and col_surface.type == 'y-plane':
             ray.u = np.array([ray.u[0], -ray.u[1]])
+            from_vacuum = False
+        elif boundary == 'vacuum' and col_surface.type == 'x-plane':
+            ray.u = np.array([-ray.u[0], ray.u[1]])
+            from_vacuum = True
+        elif boundary == 'vacuum' and col_surface.type == 'y-plane':
+            ray.u = np.array([ray.u[0], -ray.u[1]])
+            from_vacuum = True
         else:
             raise TypeError('Unkown boundary condition for surface ' + 
                             col_surface.name + 'with ' + boundary)
@@ -143,7 +156,6 @@ class Segment():
         Final position of segment
     region_name : str
         Name of region that the segment is in 
-    #TODO: add psi0 and psi1
 
     Attributes
     ----------
@@ -153,6 +165,8 @@ class Segment():
         Final position of segment
     region_name : str
         Name of region that the segment is in 
+    active : bool
+    from_vacuum  : bool
     """
     def __init__(self, r0, r1, mu, region_num, active=True):
         self.r0 = r0
@@ -162,4 +176,5 @@ class Segment():
 
         self.d = np.linalg.norm(r1-r0)/mu
         self.active = active
+        self.from_vacuum = False
 

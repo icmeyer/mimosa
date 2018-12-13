@@ -7,8 +7,8 @@ import numpy as np
 import copy
 from main import main 
 
-from surface import XPlane, YPlane, Circle
-from tools import normalize, intersection
+from surface import XPlane, YPlane, Circle, intersection
+from tools import normalize
 from plotting import *
 from region import Region
 from ray import Ray, make_segments
@@ -32,12 +32,12 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 100
+n_rays = 10
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
 lengths = []
 
-cutoff = 10
+cutoff = 200
 k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), limits,
                              ngroup, plot=True, cutoff_length=cutoff,
                              deadzone=10)

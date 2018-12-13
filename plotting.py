@@ -12,8 +12,11 @@ from tools import get_trailing_numbers
 #rc('font',**{'family':'serif','serif':['Palatino']})
 rc('text', usetex=True)
 
-def plotlines(lines='', circles = '', length = 1.26):
-    fig, ax = plt.subplots()
+def plotlines(lines='', circles = '', length = 1.26, ax=[]):
+    if ax == []: # Need a new axis for plot
+        fig, ax = plt.subplots()
+    else:
+        fig = []
 
     if lines:
         lc = mc.LineCollection(lines[0], colors=lines[1],  linewidths=1)
@@ -59,40 +62,47 @@ def plot_k(iterations, ks, title):
     plt.show()
 
 def plot_flux(e_groups, regions, adjoint=False):
-    fig, ax = plt.subplots()
+    flux_fig, ax = plt.subplots()
     legend_names = []
+    e_groups_width = []
+    for i in range(len(e_groups)-1):
+        e_groups_width.append(e_groups[i+1] - e_groups[i])
+
     for region in regions:
+        # group_vals = region.phi/e_groups_width
+        # flux = np.insert(group_vals[::-1],0,0)
         flux = np.insert(region.phi[::-1],0,0)
         plt.step(e_groups, flux)
         legend_names.append((region.mat + ' Region '+str(region.uid)))
-    plt.legend(legend_names)
+    flux_fig.legend(legend_names)
     plt.xlabel('Energy (eV)')
-    plt.ylabel('Normalized Flux cm$^{-2}$')
+    plt.ylabel('Forward Flux cm$^{-2}$')
     ax.set_yscale('log')
     ax.set_xscale('log')
-    plt.show()
 
     if adjoint:
-        fig, ax = plt.subplots()
+        a_fig, ax = plt.subplots()
         legend_names = []
         for region in regions:
             flux = np.insert(region.a_phi[::-1],0,0)
             plt.step(e_groups, flux)
             legend_names.append((region.mat + ' Region '+str(region.uid)))
-        plt.legend(legend_names)
+        a_fig.legend(legend_names)
         plt.xlabel('Energy (eV)')
-        plt.ylabel('Adjoint Normalized Flux cm$^{-2}$')
+        plt.ylabel('Adjoint Flux cm$^{-2}$')
         ax.set_yscale('log')
         ax.set_xscale('log')
-        plt.show()
 
-def plot_flux_on_geometry(ngroup, regions, rays, length):
-    e_group = 1
+def plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=False):
     fluxes = []
     for region in regions:
-        fluxes.append(region.phi[ngroup-1])
+        if adjoint:
+            fluxes.append(region.a_phi[e_group])
+        else:
+            fluxes.append(region.phi[e_group])
+        # fluxes.append(region.phi[ngroup-1])
     max_flux = np.amax(fluxes)
-    cmap = matplotlib.cm.coolwarm
+    cmap = matplotlib.cm.YlGnBu_r
     norm = matplotlib.colors.Normalize(vmin=0.0, vmax=max_flux)
 
     linesegs = []
@@ -100,17 +110,84 @@ def plot_flux_on_geometry(ngroup, regions, rays, length):
     for ray in rays:
         for segment in ray.segments:
             linesegs.append([segment.r0,segment.r1])
-            phi = regions[segment.region].phi[ngroup-1]
+            if adjoint:
+                phi = regions[segment.region].a_phi[e_group]
+            else:
+                phi = regions[segment.region].phi[e_group]
             linecols.append(cmap(norm(phi)))
     lines = [linesegs, linecols]
-    fig, ax = plotlines(lines=lines,length=length)
+    fog_fig, ax = plotlines(lines=lines,length=length)
 
-    fig.subplots_adjust(right = 0.8)
-    cbar_ax = fig.add_axes([0.85, 0.15, 0.06, 0.7])
+    fog_fig.subplots_adjust(right = 0.8)
+    cbar_ax = fog_fig.add_axes([0.85, 0.15, 0.06, 0.7])
     cbl = matplotlib.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm)
-    cbl.set_label('Flux')
+    if adjoint:
+        cbl.set_label('Adjoint Flux')
+    else:
+        cbl.set_label('Flux')
     # fig.colorbar(ims[0], cax=cbar_ax)
-    plt.show()
+    fog_fig.show()
+
+def plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=False):
+    if ngroup == 10:
+        x_plots = 3
+        y_plots = 4
+        tot_plots = int(x_plots * y_plots)
+        main_fig, main_axis = plt.subplots(x_plots,y_plots) 
+        main_fig.tight_layout()
+    elif ngroup == 2:
+        x_plots = 1
+        y_plots = 2
+        tot_plots = int(x_plots * y_plots)
+        main_fig, main_axis = plt.subplots(x_plots,y_plots) 
+        main_fig.tight_layout()
+    elif ngroup == 1:
+        x_plots = 1
+        y_plots = 1
+        tot_plots = int(x_plots * y_plots)
+        main_fig, main_axis = plt.subplots(x_plots,y_plots) 
+        main_fig.tight_layout()
+
+    for g in range(tot_plots):
+        main_axis = np.reshape(main_axis, [tot_plots, 1])
+        axis = main_axis[g][0]
+        if g> ngroup-1:
+            axis.axis('off')
+        else:
+            axis.set_title('Group '+str(g+1))
+            fluxes = []
+            for region in regions:
+                if adjoint:
+                    fluxes.append(region.a_phi[g])
+                else:
+                    fluxes.append(region.phi[g])
+                # fluxes.append(region.phi[ngroup-1])
+            max_flux = np.amax(fluxes)
+            cmap = matplotlib.cm.YlGnBu_r
+            norm = matplotlib.colors.Normalize(vmin=0.0, vmax=max_flux)
+
+            linesegs = []
+            linecols = []
+            for ray in rays:
+                for segment in ray.segments:
+                    linesegs.append([segment.r0,segment.r1])
+                    if adjoint:
+                        phi = regions[segment.region].a_phi[g]
+                    else:
+                        phi = regions[segment.region].phi[g]
+                    linecols.append(cmap(norm(phi)))
+            lines = [linesegs, linecols]
+            plotlines(lines=lines, length=length, ax=axis)
+
+    main_fig.subplots_adjust(right = 0.8)
+    cbar_ax = main_fig.add_axes([0.85, 0.15, 0.06, 0.7])
+    cbl = matplotlib.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm)
+    if adjoint:
+        cbl.set_label('Adjoint Flux')
+    else:
+        cbl.set_label('Forward Flux')
+    # fig.colorbar(ims[0], cax=cbar_ax)
+    main_fig.show()
 
 
 

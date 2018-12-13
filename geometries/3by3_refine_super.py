@@ -110,7 +110,7 @@ region_counter += 1
 regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 super_regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 
-n_rays = 100
+n_rays = 300
 main(n_rays, surfaces, regions, limits, ngroup, super_regions = super_regions,
      super_surfaces = [], plot=True)
 # main(n_rays, surfaces, regions, limits, ngroup, super_regions = [],

@@ -1,111 +1,54 @@
 
- ===========================>     TALLY 27     <============================
+ ===========================>     TALLY 28     <============================
 
  Cell 1
-   Incoming Energy [0.0, 1000.00)
+   Incoming Energy [0, 2e+07)
      Total Material
-       Flux                                 3.81209        +/- 1.30830E-02
-       Total Reaction Rate                  2.41785        +/- 8.79526E-03
-       Nu-Fission Rate                      1.19461        +/- 6.66521E-03
-   Incoming Energy [1000.00, 2.00000E+07)
-     Total Material
-       Flux                                 6.80022        +/- 1.99909E-02
-       Total Reaction Rate                  2.55608        +/- 6.64132E-03
-       Nu-Fission Rate                      9.15106E-02    +/- 5.70260E-04
+       Flux                                 10.5853        +/- 2.42185E-02
+       Total Reaction Rate                  4.96652        +/- 1.13967E-02
+       Nu-Fission Rate                      1.27715        +/- 7.35461E-03
  Cell 2
-   Incoming Energy [0.0, 1000.00)
+   Incoming Energy [0, 2e+07)
      Total Material
-       Flux                                 9.52921        +/- 3.17308E-02
-       Total Reaction Rate                  17.2632        +/- 6.90464E-02
-       Nu-Fission Rate                      0.0            +/- 0.0
-   Incoming Energy [1000.00, 2.00000E+07)
-     Total Material
-       Flux                                 14.8212        +/- 4.07031E-02
-       Total Reaction Rate                  9.27151        +/- 1.80396E-02
-       Nu-Fission Rate                      0.0            +/- 0.0
-
- ===========================>     TALLY 18     <============================
-
- Cell 1
-   Incoming Energy [0.0, 1000.00)
-     Total Material
-       Flux                                 3.80048        +/- 1.16016E-02
-   Incoming Energy [1000.00, 2.00000E+07)
-     Total Material
-       Flux                                 6.79072        +/- 2.19952E-02
- Cell 2
-   Incoming Energy [0.0, 1000.00)
-     Total Material
-       Flux                                 9.53975        +/- 3.10990E-02
-   Incoming Energy [1000.00, 2.00000E+07)
-     Total Material
-       Flux                                 14.7892        +/- 3.49849E-02
-
- ===========================>     TALLY 19     <============================
-
- Cell 1
-   Incoming Energy [0.0, 1000.00)
-     Outgoing Energy [0.0, 1000.00)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      1.62820        +/- 6.51955E-03
-     Outgoing Energy [1000.00, 2.00000E+07)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      0.0            +/- 0.0
-   Incoming Energy [1000.00, 2.00000E+07)
-     Outgoing Energy [0.0, 1000.00)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      8.46000E-03    +/- 3.84612E-04
-     Outgoing Energy [1000.00, 2.00000E+07)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      2.47432        +/- 7.62206E-03
- Cell 2
-   Incoming Energy [0.0, 1000.00)
-     Outgoing Energy [0.0, 1000.00)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      17.1378        +/- 6.83974E-02
-     Outgoing Energy [1000.00, 2.00000E+07)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      0.0            +/- 0.0
-   Incoming Energy [1000.00, 2.00000E+07)
-     Outgoing Energy [0.0, 1000.00)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      0.919340       +/- 1.13303E-03
-     Outgoing Energy [1000.00, 2.00000E+07)
-       Legendre expansion, P0
-         Total Material
-           Scattering Rate                      8.34046        +/- 1.64128E-02
-
- ===========================>     TALLY 22     <============================
-
- Cell 1
-   Incoming Energy [0.0, 2.00000E+07)
-     Total Material
-       Nu-Fission Rate                      1.28480        +/- 5.57674E-03
- Cell 2
-   Incoming Energy [0.0, 2.00000E+07)
-     Total Material
+       Flux                                 24.2598        +/- 5.06474E-02
+       Total Reaction Rate                  26.4337        +/- 6.91460E-02
        Nu-Fission Rate                      0.0            +/- 0.0
 
  ===========================>     TALLY 23     <============================
 
  Cell 1
-   Outgoing Energy [0.0, 1000.00)
+   Incoming Energy [0, 2e+07)
      Total Material
-       Nu-Fission Rate                      0.0            +/- 0.0
-   Outgoing Energy [1000.00, 2.00000E+07)
-     Total Material
-       Nu-Fission Rate                      1.28480        +/- 5.57674E-03
+       Flux                                 10.5735        +/- 3.10319E-02
+       Nu-Fission Rate                      1.29097        +/- 6.17091E-03
  Cell 2
-   Outgoing Energy [0.0, 1000.00)
+   Incoming Energy [0, 2e+07)
      Total Material
+       Flux                                 24.2575        +/- 4.71461E-02
        Nu-Fission Rate                      0.0            +/- 0.0
-   Outgoing Energy [1000.00, 2.00000E+07)
+
+ ===========================>     TALLY 20     <============================
+
+ Cell 1
+   Incoming Energy [0, 2e+07)
+     Outgoing Energy [0, 2e+07)
+       Legendre expansion, P0
+         Total Material
+           Scattering Rate                      4.10974        +/- 1.25654E-02
+ Cell 2
+   Incoming Energy [0, 2e+07)
+     Outgoing Energy [0, 2e+07)
+       Legendre expansion, P0
+         Total Material
+           Scattering Rate                      26.3031        +/- 7.18669E-02
+
+ ===========================>     TALLY 24     <============================
+
+ Cell 1
+   Outgoing Energy [0, 2e+07)
+     Total Material
+       Nu-Fission Rate                      1.29097        +/- 6.17091E-03
+ Cell 2
+   Outgoing Energy [0, 2e+07)
      Total Material
        Nu-Fission Rate                      0.0            +/- 0.0
