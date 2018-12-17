@@ -1,0 +1,8 @@
+MIMOSA - An MOC code by Isaac Meyer
+
+All scripts to execute the files are contained within the geometries folder.
+Each should be able to run by importing the modules located in this directory
+and using that to solve the problem. Some parts of the code must be changed
+for specific runs, for example when using vacuum boundary conditions make sure
+that k is calculated by iterations and not from a balance because leakage is not 
+implemented in the balance calculation.
