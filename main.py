@@ -19,8 +19,8 @@ np.random.seed(42)
 
 
 def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
-        cutoff_length=100, deadzone=0, super_regions=[],
-        super_surfaces=[]):
+        cutoff_length=100, deadzone=10, super_regions=[],
+        super_surfaces=[], pert=[]):
     """ Run MOC and write outputs to file 
 
     Parameters
@@ -30,7 +30,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
 
     """
     # Import materials library
-    MATERIALS = import_xs(ngroup)
+    MATERIALS = import_xs(ngroup, pert=pert)
 
     # Assign regions and surfaces for ray tracing if no heirarchal
     # data is given 
@@ -88,7 +88,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         k = 1
         a_k = 1
         print('Calculating initial q')
-        fission_source_old, a_fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k)
+        fission_source_old, a_fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k, pert=pert)
 
         ks = [k]
         a_ks = [a_k]
@@ -96,14 +96,16 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         phi_conv_flag = False
         print('Begin iterations')
         # while counter < 3:
+        # while not converged and counter < 2:
+        # while counter < 300:
         while not converged and counter < 300:
             # normalize_phi(regions, ngroup)
             #Print out flux in each region
             # for region in regions:
             #     print(counter, 'Flux in region', region.uid, region.mat, region.phi)
             counter += 1
-            print('Iterations: ', counter, ' k = ', k, ' a_k = ', a_k)
-            rays = ray_contributions(rays, ngroup, regions)
+            print('------Iterations: ', counter, ' k = ', k, ' a_k = ', a_k)
+            rays = ray_contributions(rays, ngroup, regions, pert=pert)
 
             #Update phi and set counter to 0 for next iteration
             for region in regions:
@@ -122,9 +124,9 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
                 region.q_phi = np.zeros(region.phi.shape)
 
             fission_source_new, a_fission_source_new, k, a_k = calc_q(regions, ngroup, k, a_k, 
-                                                update_k=True, old_fission_source=fission_source_old, old_a_fission_source=a_fission_source_old)
+                                                update_k=True, old_fission_source=fission_source_old, old_a_fission_source=a_fission_source_old, pert=pert)
 
-            print(fission_source_old, a_fission_source_old)
+            print('fission_sources', fission_source_old, a_fission_source_old)
 
             fission_source_old = fission_source_new
             a_fission_source_old = a_fission_source_new
@@ -171,9 +173,9 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         plot_from_rays(rays, regions, MATERIALS, length = length)
         # plot_k(np.arange(counter+1),ks, ktitle)
         print('Plotting forward flux')
-        plot_all_flux_on_geometry(ngroup, regions, rays, length)
+        # plot_all_flux_on_geometry(ngroup, regions, rays, length)
         print('Plotting adjoint flux')
-        plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=True)
+        # plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=True)
         e_group = 0
         plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
         # e_group = ngroup
@@ -183,14 +185,18 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         if ngroup == 10:
             energy_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
             plot_flux(energy_groups, regions, adjoint = True)
+        elif ngroup == 20 or ngroup == 40:
+            energy_groups = np.geomspace(1e-4,20e6,ngroup+1)
+            energy_groups[0] = 0
+            plot_flux(energy_groups, regions, adjoint = True)
         plt.show()
 
     if perturbation:
-        calc_perturbation(regions, MATERIALS, k, a_k)
+        pert_dict = calc_perturbation(regions, MATERIALS, k, a_k)
 
             
 
-    return k, a_k, regions
+    return k, a_k, regions, pert_dict
 
 # Helpful snippet below for checking for negative values
 

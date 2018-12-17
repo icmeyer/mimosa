@@ -95,9 +95,6 @@ z1 = openmc.ZPlane(z0=10, boundary_type='reflective')
 
 # ## Cells, etc.
 
-# In[10]:
-
-
 fuel = openmc.Cell(name='fuel', fill=uo2)
 fuel.region = -rfo & +z0 & -z1
 mod = openmc.Cell(name='moderator', fill=homogenized)
@@ -108,23 +105,12 @@ geometry = openmc.Geometry(root)
 
 # # Settings
 
-# In[11]:
-
-
 settings = openmc.Settings()
 
-
-# In[12]:
-
-
 #TODO: how many batches/particles are needed for good cross sections?
-settings.batches = 60
+settings.batches = 200
 settings.inactive = 10
 settings.particles = 1000
-
-
-# In[13]:
-
 
 # Set the initial source to a flat distribution born only in the fuel.
 space = openmc.stats.Box((-radius_fuel, -radius_fuel, 0),
@@ -133,13 +119,17 @@ settings.source = openmc.Source(space=space)
 
 
 # # MGXS Tallies
-
-# In[14]:
-
-
 # Define the 8-group energy bounds.
-ngroup = 1
-if ngroup==10:
+ngroup = 40
+if ngroup==40:
+    e_groups = np.geomspace(1e-4, 20e6, 41)
+    e_groups[0] = 0
+    print(e_groups)
+elif ngroup==20:
+    e_groups = np.geomspace(1e-4, 20e6, 21)
+    e_groups[0] = 0
+    print(e_groups)
+elif ngroup==10:
     e_groups = [0.0, 0.058, 0.14, 0.28, 0.625, 4.0, 10.0, 40.0, 5530.0, 821e3, 20e6]
 elif ngroup==2:
     e_groups = [0.0, 1000, 20e6]
@@ -147,48 +137,25 @@ elif ngroup==1:
     e_groups = [0.0, 20e6]
 groups = openmc.mgxs.EnergyGroups(e_groups)
 
-
-# In[15]:
-
-
 # Instantiate an MGXS library.
 mgxs_lib = openmc.mgxs.Library(geometry)
 mgxs_lib.energy_groups = groups
 
-
-# In[16]:
-
-
 # Don't apply any anisotropic scattering corrections.
 mgxs_lib.correction = None
 
-
-# In[17]:
-
-
 # Set the desired MGXS data.
-mgxs_lib.mgxs_types = ('total', 'scatter matrix', 'chi', 'nu-fission')
-
-
-# In[18]:
-
+mgxs_lib.mgxs_types = ('total', 'scatter matrix', 'chi', 'nu-fission', 
+                       'absorption')
 
 # Define the domain and build the library.
 mgxs_lib.domain_type = 'cell'
 mgxs_lib.domains = geometry.get_all_material_cells().values()
 mgxs_lib.build_library()
 
-
-# In[19]:
-
-
 # Add the tallies.
 tallies = openmc.Tallies()
 mgxs_lib.add_to_tallies_file(tallies)
-
-
-# In[20]:
-
 
 # Export to XML and run.
 materials.export_to_xml()
@@ -196,10 +163,6 @@ geometry.export_to_xml()
 settings.export_to_xml()
 tallies.export_to_xml()
 openmc.run()
-
-
-# In[21]:
-
 
 # Load the statepoint and the MGXS results.
 sp_file = 'statepoint.{}.h5'.format(settings.batches)
@@ -251,4 +214,10 @@ df = mgxs_lib.get_mgxs(moderator, 'nu-fission').get_pandas_dataframe()
 nufission_mat = df['mean'].values
 np.savetxt('./xs/nufission_cell_0', nufission_mat)
 
+df = mgxs_lib.get_mgxs(moderator, 'absorption').get_pandas_dataframe()
+nufission_mat = df['mean'].values
+np.savetxt('./xs/absorption_cell_0', nufission_mat)
 
+df = mgxs_lib.get_mgxs(fuel, 'absorption').get_pandas_dataframe()
+nufission_mat = df['mean'].values
+np.savetxt('./xs/absorption_cell_1', nufission_mat)

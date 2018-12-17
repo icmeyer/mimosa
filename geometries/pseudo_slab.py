@@ -26,7 +26,7 @@ bottom = YPlane(surface_id=3, boundary_type='reflection', y0=0)
 surfaces = [left, right, top, bottom]
 regions = []
 
-ngroup = 1
+ngroup = 10
 refine_slab = 30
 delta = length/refine_slab
 fuelguess = np.ones([ngroup,])
@@ -68,7 +68,7 @@ for region in regions:
 #         print([xs[i],ys[j]])
 #         print(what_region([xs[i],ys[j]], regions))
 
-n_rays = 30
+n_rays = 10
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
 lengths = []

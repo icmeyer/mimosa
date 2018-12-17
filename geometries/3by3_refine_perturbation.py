@@ -1,4 +1,5 @@
 import os
+import copy
 import sys
 mimosa_dir = os.path.dirname(os.getcwd())
 sys.path.insert(0, mimosa_dir)
@@ -24,7 +25,7 @@ circ_counter = 100
 xcoords = [2*1.26+1.26/2, 1*1.26+1.26/2, 0*1.26+1.26/2]
 ycoords = xcoords
 
-fuel_refine_level = 6
+fuel_refine_level = 4
 # Biggest radius first
 radii = np.linspace(0,0.39218,fuel_refine_level+1)[:0:-1]
 
@@ -114,7 +115,7 @@ region_counter += 1
 regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 super_regions += [mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9]
 
-n_rays = 10
+n_rays = 200
 # main(n_rays, surfaces, regions, limits, ngroup, super_regions = super_regions,
 #      super_surfaces = [], plot=False)
 k0, a_k, trash, pert_dict = main(n_rays, surfaces, copy.deepcopy(regions), 
@@ -125,19 +126,16 @@ scatter_pert_ks = []
 nuf_pert_ks = []
 for n in [0.01, 0.03, 0.05]:
     pert = ['scatter', n]
-    k, a_k, trash, pert_dict = main(n_rays, surfaces, copy.deepcopy(regions), 
+    k, a_k, trash, pert_dict1 = main(n_rays, surfaces, copy.deepcopy(regions), 
                                     limits, ngroup, 
                                     super_regions = copy.deepcopy(super_regions), 
                                     super_surfaces = [], plot=False, pert = pert)
     scatter_pert_ks.append(k)
     pert = ['nuf', n]
-    k, a_k, trash, pert_dict = main(n_rays, surfaces, copy.deepcopy(regions), 
+    k, a_k, trash, pert_dict1 = main(n_rays, surfaces, copy.deepcopy(regions), 
                                     limits, ngroup, 
                                     super_regions = copy.deepcopy(super_regions), 
                                     super_surfaces = [], plot=False, pert = pert)
     nuf_pert_ks.append(k)
 
-scat_predicted_ks = 1/(1/k0 + pert_dict['scatter'])
-nuf_predicted_ks = 1/(1/k0 + pert_dict['nuf'])
-plt.scatter(
-plt.legend(
+pert_plot(pert_dict, scatter_pert_ks, nuf_pert_ks, k0)

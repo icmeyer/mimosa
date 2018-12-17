@@ -31,7 +31,7 @@ def normalize_q(regions, ngroup):
             region.q[group] = region.q[group]/q_sum
 
 def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
-           old_a_fission_source=0):
+           old_a_fission_source=0, pert=[]):
     """Updates the q's of the regions and returns a total q
 
     Parameters
@@ -53,10 +53,16 @@ def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
     k : float
         Eigenvalue calculated from new and old source
     """
-    MATERIALS = import_xs(ngroup)
+    MATERIALS = import_xs(ngroup, pert=pert)
 
     fission_source = 0
     a_fission_source = 0 
+    tot_phi = 0
+    tot_absorption = 0
+    a_tot_absorption = 0
+    tot_fission_source = 0
+    tot_fission_source_test = 0
+    a_tot_fission_source = 0
     for idx, region in enumerate(regions):
         # Get materials properties for this region
         scatter = MATERIALS[region.mat]['scatter']
@@ -64,8 +70,10 @@ def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
         sigma_t = MATERIALS[region.mat]['total']
         nuf = MATERIALS[region.mat]['nufission']
         chi = MATERIALS[region.mat]['chi']
+        absor = MATERIALS[region.mat]['absorption']
 
         phi = region.phi
+        tot_phi += np.sum(region.phi)*region.vol
         a_phi = region.a_phi
         region.q = np.zeros([len(phi),])
         region.a_q = np.zeros([len(phi),])
@@ -76,21 +84,33 @@ def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
         # Region tracker
         region_fission_source = np.dot(nuf, phi)
         region_a_fission_source = np.dot(chi, a_phi)
+        region_absorption = np.dot(absor, phi)
+        a_region_absorption = np.dot(absor, a_phi)
 
-        # Distribute fission source using xi
+        # Distribute fission source using chi
         q_fission_uncorrected = chi*region_fission_source
         q_fission = q_fission_uncorrected/k
+        # print('forward: chi, nuf, fission_source', chi, nuf, phi, q_fission)
         a_q_fission_uncorrected = nuf*region_a_fission_source
         a_q_fission = a_q_fission_uncorrected/a_k
+        # print('adjoint: chi, nuf, fission_source', chi, nuf, a_phi, a_q_fission)
 
         # Total tracker
         fission_source += np.sum(q_fission_uncorrected)
+        tot_fission_source += region.vol * np.sum(q_fission_uncorrected)
+        tot_fission_source_test += np.sum(q_fission_uncorrected)
+        a_tot_fission_source += region.vol * np.sum(a_q_fission_uncorrected)
         a_fission_source += np.sum(a_q_fission_uncorrected)
+
+        # print('fission source in q calc:', fission_source, a_fission_source)
+        tot_absorption += np.sum(region_absorption)*region.vol
+        a_tot_absorption += np.sum(a_region_absorption)*region.vol
+        # a_tot_absorption += np.sum(a_region_absorption)
         # print('Values the same?', np.dot(nuf,phi), np.sum(q_fission)*k)
         # scatter is organized by [group out, group in]
         if ngroup > 1:
-            q_scatter = np.matmul(scatter,phi)
-            a_q_scatter = np.matmul(a_scatter,phi)
+            q_scatter = np.matmul(scatter, phi)
+            a_q_scatter = np.matmul(a_scatter, a_phi)
         else:
             q_scatter = scatter*phi
             a_q_scatter = a_scatter*phi
@@ -104,14 +124,23 @@ def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
         # print('q_fission sources before k', q_fission, a_q_fission)
         # print('ks', k, a_k)
 
+    k_from_balance = tot_fission_source/tot_absorption
+    a_k_from_balance = a_tot_fission_source/a_tot_absorption
     if update_k:
+        # print('fission source at k update - old', old_fission_source, old_a_fission_source)
+        # print('fission source at k update - new', fission_source, a_fission_source)
         k = fission_source/old_fission_source
         a_k = a_fission_source/old_a_fission_source
+        print('forward k/balance', k, k_from_balance)
+        print('forward balance factors:', tot_fission_source, tot_absorption)
+        print('adjoint a_k/balance', a_k, a_k_from_balance)
+        print('adjoint balance factors:', a_tot_fission_source, a_tot_absorption)
+
     # normalize_q(regions, ngroup)
-    return fission_source/k, a_fission_source/a_k, k, a_k
+    return fission_source/k, a_fission_source/a_k, k_from_balance, a_k
 
 
-def ray_contributions(rays, ngroup, regions):
+def ray_contributions(rays, ngroup, regions, pert=[]):
     """ Update the phi using method of characteristics along
     the stored segments
 
@@ -127,12 +156,13 @@ def ray_contributions(rays, ngroup, regions):
     -------
     rays : list of Ray objects
     """
-    MATERIALS = import_xs(ngroup)
+    MATERIALS = import_xs(ngroup, pert=pert)
 
     for ray in rays:
         # Calculate initial psi
         psi = copy.deepcopy(regions[ray.segments[0].region].q)
-        a_psi = copy.deepcopy(regions[ray.segments[0].region].a_q)
+        # a_psi = copy.deepcopy(regions[ray.segments[0].region].a_q)
+        a_psi = copy.deepcopy(regions[ray.segments[0].region].q)
 
         for segment in ray.segments:
             if segment.from_vacuum:
@@ -148,7 +178,7 @@ def ray_contributions(rays, ngroup, regions):
             a_q = region.a_q
             tau = sigma_t*d
             exp_term = (1-np.exp(-tau))
-            a_exp_term = (1-np.exp(tau))
+            # a_exp_term = (1-np.exp(-tau[::-1]))
             delta_psi = (psi - q)*exp_term
             delta_a_psi = (a_psi - a_q)*exp_term
             # print('tau', tau)

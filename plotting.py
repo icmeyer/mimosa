@@ -77,7 +77,7 @@ def plot_flux(e_groups, regions, adjoint=False):
     flux_fig.legend(legend_names)
     plt.xlabel('Energy (eV)')
     plt.ylabel('Forward Flux cm$^{-2}$')
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
     ax.set_xscale('log')
 
     if adjoint:
@@ -85,12 +85,13 @@ def plot_flux(e_groups, regions, adjoint=False):
         legend_names = []
         for region in regions:
             flux = np.insert(region.a_phi[::-1],0,0)
+            # flux = np.insert(region.a_phi[::-1]/e_groups_width[::-1],0,0)
             plt.step(e_groups, flux)
             legend_names.append((region.mat + ' Region '+str(region.uid)))
         a_fig.legend(legend_names)
         plt.xlabel('Energy (eV)')
         plt.ylabel('Adjoint Flux cm$^{-2}$')
-        ax.set_yscale('log')
+        # ax.set_yscale('log')
         ax.set_xscale('log')
 
 def plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=False):
@@ -189,8 +190,28 @@ def plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=False):
     # fig.colorbar(ims[0], cax=cbar_ax)
     main_fig.show()
 
+def pert_plot(pert_dict, scatter_pert_ks, nuf_pert_ks, k0):
+    scat_predicted_ks = 1/(1/k0 + pert_dict['scatter'])
+    scat_fig, ax = plt.subplots()
+    plt.scatter(pert_dict['percent']*100, [k0]*3)
+    plt.scatter(pert_dict['percent']*100, scat_predicted_ks)
+    plt.scatter(pert_dict['percent']*100, scatter_pert_ks)
+    scat_fig.legend(['Original', 'Theory', 'True Perturbation'])
+    plt.xlabel('Percent Increase')
+    plt.ylabel('$k_{inf}$')
+    plt.title('$\Sigma_s$')
 
+    nuf_predicted_ks = 1/(1/k0 + pert_dict['nuf'])
+    nuf_fig, ax = plt.subplots()
+    plt.scatter(pert_dict['percent']*100, [k0]*3)
+    plt.scatter(pert_dict['percent']*100, nuf_predicted_ks)
+    plt.scatter(pert_dict['percent']*100, nuf_pert_ks)
+    nuf_fig.legend(['Original','Theory', 'True Perturbation'])
+    plt.xlabel('Percent Increase')
+    plt.ylabel('$k_{inf}$')
+    plt.title('nu-$\Sigma_f$')
 
+    plt.show()
 
 if __name__ == '__main__':
     segments = [[(0, 1), (1, 1)], [(2, 3), (-3, 2)], [(0, 2), (2, 3)]]

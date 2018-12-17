@@ -24,7 +24,7 @@ bottom = YPlane(surface_id=5, boundary_type='reflection', y0=0)
 
 surfaces = [circle, left, right, top, bottom]
 
-ngroup = 10
+ngroup = 2
 fuelphiguess = np.ones([ngroup,])
 modphiguess = fuelphiguess*0.1
 moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
@@ -32,14 +32,14 @@ moderator = Region([left, right, top, bottom, circle],[1, -1, -1, 1, 1],
 fuel = Region([circle], [-1], uid=1, mat='fuel', phi=fuelphiguess)
 regions = [moderator, fuel]
 
-n_rays = 10
+n_rays = 30
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
 lengths = []
 
 cutoff = 200
 k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), limits,
-                             ngroup, plot=True, cutoff_length=cutoff,
+                             ngroup, plot=False, cutoff_length=cutoff,
                              deadzone=10)
 # k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), pitch, ngroup, cutoff_length=cutoff, deadzone=10)
 lengths.append(cutoff)

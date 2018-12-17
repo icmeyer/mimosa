@@ -13,7 +13,7 @@ from plotting import *
 from region import Region
 from ray import Ray, make_segments
 
-ngroup = 10
+ngroup = 40
 pitch = 1.26
 limits = [0, pitch, 0, pitch]
 # Surfaces starting with 100 will be circles
@@ -23,7 +23,7 @@ circ_counter = 100
 xcoord = pitch/2
 ycoord = xcoord
 
-fuel_refine_level = 16
+fuel_refine_level = 3
 # Biggest radius first
 radii = np.linspace(0,0.39218,fuel_refine_level+1)[:0:-1]
 
@@ -62,7 +62,7 @@ mod1 = Region([left, right, top, bottom, surfaces[fuel_refine_level*0]],[1, -1, 
 region_counter += 1
 regions += [mod1]
 
-n_rays = 10
+n_rays = 100
 cutoff = 100
 k, a_k, regions_trash = main(n_rays, surfaces, copy.deepcopy(regions), limits,
                              ngroup, plot=True, cutoff_length=cutoff,

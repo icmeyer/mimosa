@@ -4,6 +4,7 @@ def calc_perturbation(regions, MATERIALS, k, a_k):
     """
     Calculate the change in reactivity using manufactured uncertainties
     """
+    pert_dict = {'percent': np.array([0.01, 0.03, 0.05]), 'nuf' : [], 'scatter': []}
     print('------------Perturbation------------')
     top = 0
     bottom = 0
@@ -18,6 +19,7 @@ def calc_perturbation(regions, MATERIALS, k, a_k):
             bottom += np.inner(a_phi, chi*np.dot(nuf, phi))
         d_lamb = top/bottom
         print('Sigma_s', n, d_lamb)
+        pert_dict['scatter'].append(d_lamb)
             
     top = 0
     bottom = 0
@@ -32,3 +34,5 @@ def calc_perturbation(regions, MATERIALS, k, a_k):
             bottom += np.inner(a_phi, chi*np.dot(nuf, phi))
         d_lamb = top/bottom
         print('nuf', n, d_lamb)
+        pert_dict['nuf'].append(d_lamb)
+    return pert_dict
