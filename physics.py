@@ -131,10 +131,10 @@ def calc_q(regions, ngroup, k, a_k, update_k=False, old_fission_source=0,
         # print('fission source at k update - new', fission_source, a_fission_source)
         k = fission_source/old_fission_source
         a_k = a_fission_source/old_a_fission_source
-        print('forward k/balance', k, k_from_balance)
-        print('forward balance factors:', tot_fission_source, tot_absorption)
-        print('adjoint a_k/balance', a_k, a_k_from_balance)
-        print('adjoint balance factors:', a_tot_fission_source, a_tot_absorption)
+        # print('forward k/balance', k, k_from_balance)
+        # print('forward balance factors:', tot_fission_source, tot_absorption)
+        # print('adjoint a_k/balance', a_k, a_k_from_balance)
+        # print('adjoint balance factors:', a_tot_fission_source, a_tot_absorption)
 
     # normalize_q(regions, ngroup)
     return fission_source/k, a_fission_source/a_k, k_from_balance, a_k

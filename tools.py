@@ -33,7 +33,7 @@ def check_phi_convergence(regions, old_phi, adjoint=False):
     new_phi = collect_phi(regions, adjoint=adjoint)
     err = np.linalg.norm(new_phi - old_phi)/np.linalg.norm(old_phi)
     # print(err)
-    if err < 1e-5:
+    if err < 1e-6:
         converge_flag = True
     else:
         converge_flag = False
@@ -55,3 +55,12 @@ def get_trailing_numbers(s, zero=False):
 def real_reduce(num):
     """ Reduce complex numbers to reals if imaginary part is 0 """
     return num.real if (num.imag == 0).all() else num
+
+def quad_sum(array):
+    print(array)
+    n = len(array)
+    total = 0
+    for i in range(n):
+        for j in range(n):
+            total += array[i,j]**2
+    return total

@@ -96,6 +96,8 @@ class Region():
         self.mat = mat
         self.phi = phi
         self.a_phi = phi
+        self.phi_0 = np.zeros_like(phi)
+        self.a_phi_0 = np.zeros_like(phi)
         self.vol = vol
 
         self.q = np.zeros([len(phi),])

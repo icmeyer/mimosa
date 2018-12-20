@@ -126,7 +126,7 @@ super_regions += mod_regions
 #     r = (1.89,ys[i])
 #     print(what_region(r,regions))
 
-n_rays = 1000
+n_rays = 100
 main(n_rays, surfaces, regions, limits, ngroup, super_regions = super_regions,
       super_surfaces = [], plot=True)
 # main(n_rays, surfaces, regions, limits, ngroup, super_regions = [],

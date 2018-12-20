@@ -213,6 +213,29 @@ def pert_plot(pert_dict, scatter_pert_ks, nuf_pert_ks, k0):
 
     plt.show()
 
+def pert_plot2(scat_predict, scatter_pert_ks, nuf_predict, nuf_pert_ks, k0):
+    percents = np.array([0.01, 0.03, 0.05])
+    scat_predicted_ks = 1/(1/k0 + scat_predict)
+    scat_fig, ax = plt.subplots()
+    plt.scatter(percents*100, [k0]*3)
+    plt.scatter(percents*100, scat_predicted_ks)
+    plt.scatter(percents*100, scatter_pert_ks)
+    scat_fig.legend(['Original', 'Theory', 'True Perturbation'])
+    plt.xlabel('Percent Increase')
+    plt.ylabel('$k_{inf}$')
+    plt.title('$\Sigma_a$')
+
+    nuf_predicted_ks = 1/(1/k0 + nuf_predict)
+    nuf_fig, ax = plt.subplots()
+    plt.scatter(percents*100, [k0]*3)
+    plt.scatter(percents*100, nuf_predicted_ks)
+    plt.scatter(percents*100, nuf_pert_ks)
+    nuf_fig.legend(['Original','Theory', 'True Perturbation'])
+    plt.xlabel('Percent Increase')
+    plt.ylabel('$k_{inf}$')
+    plt.title('nu- $\Sigma_f$')
+
+    plt.show()
 if __name__ == '__main__':
     segments = [[(0, 1), (1, 1)], [(2, 3), (-3, 2)], [(0, 2), (2, 3)]]
     colors = np.array([(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1)])

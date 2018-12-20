@@ -68,7 +68,7 @@ for region in regions:
 #         print([xs[i],ys[j]])
 #         print(what_region([xs[i],ys[j]], regions))
 
-n_rays = 10
+n_rays = 20
 # k, regions = main(n_rays, surfaces, regions, pitch, ngroup, plot=False)
 
 lengths = []

@@ -19,8 +19,8 @@ np.random.seed(42)
 
 
 def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
-        cutoff_length=100, deadzone=10, super_regions=[],
-        super_surfaces=[], pert=[]):
+        cutoff_length=300, deadzone=10, super_regions=[],
+        super_surfaces=[], pert=[], k_guess = 0, rays=[]):
     """ Run MOC and write outputs to file 
 
     Parameters
@@ -41,52 +41,61 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
 
 
     physics = True
-    perturbation = True
+    perturbation = False
+    quiet = False
 
     start = time.perf_counter()
     print(header)
-    rays = []
-    print('Laying down tracks')
-    track_time_0 = time.perf_counter()
-    all_track_length = 0
-    all_active_length = 0
+    if rays == []:
+        print('Laying down tracks')
+        track_time_0 = time.perf_counter()
+        all_track_length = 0
+        all_active_length = 0
 
-    one_percent = np.max([np.floor(n_rays/100),1])
-    # Initiate rays and fill each with segments
-    for i in range(n_rays):
-        if i%one_percent == 0:
-            sys.stdout.write("\r{0:.0%}".format(i/n_rays))
-            sys.stdout.flush()
-        rstart = np.zeros(2)
-        rstart[0] = rand()*(limits[1]-limits[0])+limits[0]
-        rstart[1] = rand()*(limits[3]-limits[2])+limits[2]
-        polar = (2*rand()-1)*pi/2
-        theta = rand()*2*pi
-        ray_init = Ray(r=rstart, theta=theta, varphi=polar)
-        ray = make_segments(ray_init, surfaces, regions, 
-                            cutoff_length=cutoff_length, deadzone=deadzone,
-                            super_surfaces = super_surfaces, 
-                            super_regions = super_regions)
-        all_track_length += ray.length
-        all_active_length += ray.active_length
-        rays.append(ray)
+        one_percent = np.max([np.floor(n_rays/100),1])
+        # Initiate rays and fill each with segments
+        for i in range(n_rays):
+            if i%one_percent == 0:
+                sys.stdout.write("\r{0:.0%}".format(i/n_rays))
+                sys.stdout.flush()
+            rstart = np.zeros(2)
+            rstart[0] = rand()*(limits[1]-limits[0])+limits[0]
+            rstart[1] = rand()*(limits[3]-limits[2])+limits[2]
+            polar = (2*rand()-1)*pi/2
+            theta = rand()*2*pi
+            ray_init = Ray(r=rstart, theta=theta, varphi=polar)
+            ray = make_segments(ray_init, surfaces, regions, 
+                                cutoff_length=cutoff_length, deadzone=deadzone,
+                                super_surfaces = super_surfaces, 
+                                super_regions = super_regions)
+            all_track_length += ray.length
+            all_active_length += ray.active_length
+            rays.append(ray)
 
-    for region in regions:
-        # Assign volumes
-        region.vol = region.tot_track_length/all_active_length
-        sys.stdout.write("\n")
-        print('Region vol:', region.mat, region.vol)
+        for region in regions:
+            # Assign volumes
+            region.vol = region.tot_track_length/all_active_length
+            print('Region vol:', region.mat, region.vol)
 
-    print('Tracks laid and volume calculated')
-    track_time_1 = time.perf_counter()
-    print('Track laying time: ', track_time_1-track_time_0)
+        print('Tracks laid and volume calculated')
+        track_time_1 = time.perf_counter()
+        print('Track laying time: ', track_time_1-track_time_0)
+
+    else: 
+        all_active_length = 0
+        for ray in rays:
+            all_active_length += ray.active_length
 
     if physics:
         print('Begin physics')
         counter = 0
         #Initial k, a_k, and q guess
-        k = 1
-        a_k = 1
+        if k_guess == 0:
+            k = 1
+            a_k = 1
+        else:
+            k = k_guess
+            a_k = k_guess
         print('Calculating initial q')
         fission_source_old, a_fission_source_old, k, a_k = calc_q(regions, ngroup, k, a_k, pert=pert)
 
@@ -104,7 +113,8 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
             # for region in regions:
             #     print(counter, 'Flux in region', region.uid, region.mat, region.phi)
             counter += 1
-            print('------Iterations: ', counter, ' k = ', k, ' a_k = ', a_k)
+            if not quiet:
+                print('------Iterations: ', counter, ' k = ', k, ' a_k = ', a_k)
             rays = ray_contributions(rays, ngroup, regions, pert=pert)
 
             #Update phi and set counter to 0 for next iteration
@@ -126,7 +136,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
             fission_source_new, a_fission_source_new, k, a_k = calc_q(regions, ngroup, k, a_k, 
                                                 update_k=True, old_fission_source=fission_source_old, old_a_fission_source=a_fission_source_old, pert=pert)
 
-            print('fission_sources', fission_source_old, a_fission_source_old)
+            # print('fission_sources', fission_source_old, a_fission_source_old)
 
             fission_source_old = fission_source_new
             a_fission_source_old = a_fission_source_new
@@ -165,7 +175,7 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         except:
             print('Time per segment per group: n/a')
 
-    # normalize_phi(regions, ngroup, adjoint=True)
+    normalize_phi(regions, ngroup, adjoint=True)
     if plot:
         ktitle ='k = '+str(k)+' Rays ='+str(n_rays)
         length = np.amax([limits[1]-limits[0],limits[3]-limits[2]])
@@ -173,11 +183,11 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         plot_from_rays(rays, regions, MATERIALS, length = length)
         # plot_k(np.arange(counter+1),ks, ktitle)
         print('Plotting forward flux')
-        # plot_all_flux_on_geometry(ngroup, regions, rays, length)
+        plot_all_flux_on_geometry(ngroup, regions, rays, length)
         print('Plotting adjoint flux')
-        # plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=True)
+        plot_all_flux_on_geometry(ngroup, regions, rays, length, adjoint=True)
         e_group = 0
-        plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
+        # plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
         # e_group = ngroup
         # plot_flux_on_geometry(ngroup, regions, rays, length, e_group, adjoint=True)
         # e_group = 1
@@ -195,8 +205,12 @@ def main(n_rays, surfaces, regions, limits, ngroup, plot=False,
         pert_dict = calc_perturbation(regions, MATERIALS, k, a_k)
 
             
+    # Zero out ray lengths and volumes so region objects can be reused
+    # for region in regions:
+    #     region.tot_track_length = 0
+    #     region.vol = 0
 
-    return k, a_k, regions, pert_dict
+    return k, a_k, regions, rays
 
 # Helpful snippet below for checking for negative values
 
